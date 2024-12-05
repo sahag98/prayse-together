@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-
+import Feather from '@expo/vector-icons/Feather';
 export default function Setup() {
   const { currentUser } = useAuth();
   const [step, setStep] = useState({ counter: 1, title: 'User Information' });
@@ -74,15 +74,18 @@ export default function Setup() {
               />
             </View>
           </View>
+          <Text className="mt-5 pl-4 text-2xl font-bold">Hey! Let's setup your profile 👋</Text>
           <View className="flex-1 justify-center gap-4">
-            <Text className="mt-2 self-center text-2xl font-bold">Let's setup your profile</Text>
             <Animated.View
               style={[animatedStyle, { flexDirection: 'row', width: screenWidth * 3 }]}>
               <View className="gap-5 px-4" style={{ width: screenWidth }}>
                 {step.counter === 1 && (
                   <>
-                    <Pressable className="size-36 self-center rounded-full bg-gray-200">
-                      {/* <Text>Upload your profile picture</Text> */}
+                    <Pressable className="size-40 items-center justify-center gap-3 self-center rounded-full bg-gray-200 p-2">
+                      <Feather name="upload" size={40} color="black" />
+                      <Text className="w-4/5 text-center text-sm leading-4">
+                        Upload profile image
+                      </Text>
                     </Pressable>
                     <TextInput
                       placeholder="Enter your username"
@@ -99,17 +102,35 @@ export default function Setup() {
               </View>
               <View className="px-4" style={{ width: screenWidth }}>
                 {step.counter === 2 && (
-                  <>
-                    <Text>Are you new to the Christian faith?</Text>
-                    <TextInput
-                      placeholder="Yes or No"
-                      style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
-                    />
-                    <Text>Do you prefer group studies or individual studies?</Text>
-                    <TextInput
+                  <View className="gap-3">
+                    <Text className="font-medium">Are you new to the Christian faith?</Text>
+                    <View className="w-full flex-row gap-3">
+                      <Pressable className="flex-1 items-center justify-center rounded-xl bg-gray-200 p-6">
+                        <Text className="font-semibold">Yes</Text>
+                      </Pressable>
+                      <Pressable className="flex-1 items-center justify-center rounded-xl bg-gray-200 p-6">
+                        <Text className="font-semibold">No</Text>
+                      </Pressable>
+                    </View>
+                    {/* <TextInput
+                      placeholder="Enter your username"
+                      className="placeholder:text-light-foreground/60 rounded-3xl bg-gray-200 p-4"
+                    /> */}
+                    <Text className="mt-1 font-medium">
+                      Do you prefer group studies or individual studies?
+                    </Text>
+                    <View className="w-full flex-row gap-3">
+                      <Pressable className="flex-1 items-center justify-center rounded-xl bg-gray-200 p-6">
+                        <Text className="font-semibold">Group</Text>
+                      </Pressable>
+                      <Pressable className="flex-1 items-center justify-center rounded-xl bg-gray-200 p-6">
+                        <Text className="font-semibold">Individual</Text>
+                      </Pressable>
+                    </View>
+                    {/* <TextInput
                       placeholder="Group or Individual"
-                      style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
-                    />
+                      className="placeholder:text-light-foreground/60 rounded-3xl bg-gray-200 p-4"
+                    /> */}
                     <View className="mt-5 gap-3">
                       <Pressable
                         className="items-center justify-center rounded-3xl bg-light-primary p-4"
@@ -122,7 +143,7 @@ export default function Setup() {
                         <Text className="text-base font-semibold">Back</Text>
                       </Pressable>
                     </View>
-                  </>
+                  </View>
                 )}
               </View>
               <View className="px-4" style={{ width: screenWidth }}>
