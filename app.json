@@ -10,7 +10,16 @@
       "output": "static",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [["expo-apple-authentication"], ["expo-router"]],
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you setup a profile picture."
+        }
+      ],
+      ["expo-apple-authentication"],
+      ["expo-router"]
+    ],
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true

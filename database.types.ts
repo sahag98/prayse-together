@@ -42,6 +42,33 @@ export type Database = {
         }
         Relationships: []
       }
+      study_group: {
+        Row: {
+          code: number
+          created_at: string
+          description: string | null
+          frequency: string
+          id: number
+          name: string
+        }
+        Insert: {
+          code: number
+          created_at?: string
+          description?: string | null
+          frequency: string
+          id?: number
+          name: string
+        }
+        Update: {
+          code?: number
+          created_at?: string
+          description?: string | null
+          frequency?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
