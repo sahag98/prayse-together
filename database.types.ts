@@ -9,6 +9,113 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      group_members: {
+        Row: {
+          created_at: string
+          group_id: number | null
+          id: number
+          is_admin: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          group_id?: number | null
+          id?: number
+          is_admin?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: number | null
+          id?: number
+          is_admin?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_notes: {
+        Row: {
+          created_at: string
+          group_id: number
+          id: number
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          group_id: number
+          id?: number
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: number
+          id?: number
+          note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_notes_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_group"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson: {
+        Row: {
+          created_at: string
+          group_id: number
+          id: number
+          study_admin: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: number
+          id?: number
+          study_admin: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: number
+          id?: number
+          study_admin?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_study_admin_fkey"
+            columns: ["study_admin"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -41,6 +148,93 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      study_group: {
+        Row: {
+          admin_id: string | null
+          code: number
+          created_at: string
+          description: string | null
+          frequency: string
+          id: number
+          name: string
+          note_id: number | null
+        }
+        Insert: {
+          admin_id?: string | null
+          code: number
+          created_at?: string
+          description?: string | null
+          frequency: string
+          id?: number
+          name: string
+          note_id?: number | null
+        }
+        Update: {
+          admin_id?: string | null
+          code?: number
+          created_at?: string
+          description?: string | null
+          frequency?: string
+          id?: number
+          name?: string
+          note_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_group_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_group_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "group_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_notes: {
+        Row: {
+          created_at: string
+          group_id: number
+          id: number
+          note: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: number
+          id?: number
+          note: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: number
+          id?: number
+          note?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_notes_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_notes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
