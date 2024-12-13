@@ -60,8 +60,8 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
         )}
         <View className="h-[0.5px] w-full bg-gray-300" />
         <Text className="text-sm text-gray-800">Most Recent Note</Text>
-        <Text className="text-sm text-gray-500">
-          {getLastWords(recentNotes?.note!, 5)} {/* Change 2 to the desired number of words */}
+        <Text className="flex-1 truncate text-sm text-gray-500">
+          {getLastWords(recentNotes?.note!, 50)} {/* Change 2 to the desired number of words */}
         </Text>
         <View className="mt-auto">
           {item.profiles.id !== item.study_group.admin_id && (
