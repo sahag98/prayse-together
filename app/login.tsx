@@ -8,7 +8,6 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 export default function Login() {
   const { getGoogleOAuthUrl, currentUser, setCurrentUser } = useAuth();
-  console.log('current user: ', currentUser);
   const onSignInWithApple = async () => {
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -28,7 +27,6 @@ export default function Login() {
           token: credential.identityToken,
         });
 
-        console.log(JSON.stringify({ error, user }, null, 2));
         if (!error) {
           console.log('Signed in!');
           //   router.push(COMMUNITY_SCREEN);
@@ -60,7 +58,6 @@ export default function Login() {
       if (result.type === 'success') {
         const data = extractParamsFromUrl(result.url);
 
-        console.log('data: ', JSON.stringify(data, null, 2));
         if (!data.access_token || !data.refresh_token) {
           console.log('error', 'Failed to get authentication tokens');
           return;
@@ -114,7 +111,7 @@ export default function Login() {
               height={600}
               className="size-72 self-center"
             />
-            <Text className="text-4xl font-bold">Welcome to Prayse Together</Text>
+            <Text className="text-4xl font-bold">Welcome to App Name</Text>
             <Text className="">
               Your guide to exploring the Bible and growing in faith with others.
             </Text>

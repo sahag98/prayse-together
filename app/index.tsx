@@ -15,14 +15,13 @@ export default function Home() {
   if (currentUser && currentUser.username === null) {
     return <Redirect href={'/setup'} />;
   }
-  return (
-    <>
-      {/* <Stack.Screen options={{ title: 'Home' }} /> */}
-      <Container>
-        <View className="flex-1 gap-5 px-4">
-          <Text className="text-2xl font-bold">Hello {currentUser?.username}</Text>
-        </View>
-      </Container>
-    </>
-  );
+  return <Redirect href={'/(tabs)/home'} />;
+  // <>
+  //   {/* <Stack.Screen options={{ title: 'Home' }} /> */}
+  //   <Container>
+  //     <View className="flex-1 gap-5 px-4">
+  //       <Text className="text-2xl font-bold">Hello {currentUser?.username}</Text>
+  //     </View>
+  //   </Container>
+  // </>
 }
