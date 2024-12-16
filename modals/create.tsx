@@ -18,6 +18,7 @@ const CreateGroupBottomModal = ({
   const [groupname, setGroupname] = useState('');
   const [groupdescription, setGroupdescription] = useState('');
   const [groupFrequency, setGroupFrequency] = useState('');
+  const [groupCode, setGroupCode] = useState<number | null>();
   const [activeTab, setActiveTab] = useState('create');
   // ref
   const snapPoints = useMemo(() => ['50%', '75%'], []);
@@ -64,6 +65,39 @@ const CreateGroupBottomModal = ({
       setGroupname('');
       setGroupdescription('');
       // getUserGroups();
+    }
+  }
+
+  async function joinBibleStudy() {
+    if (!groupCode) {
+      return;
+    }
+    try {
+      let { data: study_group, error } = await supabase
+        .from('study_group')
+        .select('*')
+        .eq('code', groupCode)
+        .single();
+
+      if (!study_group) {
+        alert("This group doesn't exist. Try again");
+        return;
+      }
+      const { data: insertMemberData, error: insertMemberError } = await supabase
+        .from('group_members')
+        .insert([
+          {
+            group_id: study_group.id,
+            user_id: currentUser?.id,
+            is_admin: false,
+          },
+        ])
+        .select();
+    } catch (error) {
+      console.log('something went wrong: ', error);
+    } finally {
+      bottomSheetModalRef.current?.close();
+      setGroupCode(null);
     }
   }
 
@@ -170,7 +204,7 @@ const CreateGroupBottomModal = ({
                 />
 
                 <Pressable
-                  onPress={finalizeSetup}
+                  onPress={joinBibleStudy}
                   className="mt-1 items-center justify-center rounded-3xl bg-light-primary p-4">
                   <Text className="text-lg font-bold">JOIN</Text>
                 </Pressable>
