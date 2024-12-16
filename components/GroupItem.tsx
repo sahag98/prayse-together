@@ -21,9 +21,10 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
       .from('group_notes')
       .select('*')
       .eq('group_id', item.group_id)
-      .single();
+      .order('id', { ascending: false });
 
-    setRecentNotes(group_notes);
+    //@ts-expect-error
+    setRecentNotes(group_notes[0]);
   }
 
   useEffect(() => {
@@ -60,9 +61,10 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
         )}
         <View className="h-[0.5px] w-full bg-gray-300" />
         <Text className="text-sm text-gray-800">Most Recent Note</Text>
-        <Text className="flex-1 truncate text-sm text-gray-500">
-          {getLastWords(recentNotes?.note!, 50)} {/* Change 2 to the desired number of words */}
-        </Text>
+        {recentNotes && (
+          <Text className="flex-1 truncate text-sm text-gray-500">{recentNotes.note}</Text>
+        )}
+
         <View className="mt-auto">
           {item.profiles.id !== item.study_group.admin_id && (
             <>

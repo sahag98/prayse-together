@@ -9,7 +9,7 @@ export default function Layout() {
       <AuthProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-          <Stack.Screen name="group/[id]" options={{ animation: 'fade_from_bottom' }} />
+          <Stack.Screen name="group/[id]" options={{ animation: 'fade' }} />
         </Stack>
       </AuthProvider>
     </GestureHandlerRootView>

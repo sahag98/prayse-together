@@ -27,6 +27,8 @@ export interface Lesson {
 export interface Note {
   id: number;
   note: string | null;
+  reference: string | null;
+  profiles: Profile;
   group_id: number;
 }
 
