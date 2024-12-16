@@ -1,33 +1,25 @@
-import {
-  Pressable,
-  Text,
-  View,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  FlatList,
-  Image,
-} from 'react-native';
+import { Pressable, Text, View, TextInput, FlatList } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Container } from '~/components/Container';
 import { supabase } from '~/utils/supabase';
 import { Tables } from '~/database.types';
-import { AntDesign, Entypo, Feather } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 import { useAuth } from '~/providers/auth-provider';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import JoinGroupModal from '~/modals/join-group';
 
-import biblejson from '~/assets/bible.json';
 import GetVerseModal from '~/modals/get-verse-modal';
-import { canGoBack } from 'expo-router/build/global-state/routing';
 import { Note } from '~/types/types';
+import NoteItem from '~/components/NoteItem';
+import InsertTextModlal from '~/modals/insert-text-modal';
 
 const GroupPage = () => {
   const { id } = useLocalSearchParams();
   const inputRef = useRef<TextInput>(null);
   const joinModalRef = useRef<BottomSheetModal>(null);
   const [showVerseModal, setShowVerseModal] = useState(false);
+  const [showTextModal, setShowTextModal] = useState(false);
 
   const { currentUser } = useAuth();
 
@@ -188,44 +180,23 @@ const GroupPage = () => {
         </View>
         <FlatList
           data={groupNotes}
-          style={{ marginBottom: 5 }}
+          inverted
+          style={{ marginBottom: 5, flex: 1, marginTop: 15 }}
+          contentContainerStyle={{ gap: 15 }}
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item?.id?.toString()}
-          renderItem={({ item }) => (
-            <View className="gap-2 p-2">
-              <View className="flex-row items-center gap-2">
-                {item.profiles?.avatar_url ? (
-                  <Image source={{ uri: item.profiles.avatar_url }} />
-                ) : (
-                  <Feather
-                    className="rounded-full bg-gray-300 p-1"
-                    name="user"
-                    size={25}
-                    color="black"
-                  />
-                )}
-                <Text className="text-lg">{item.profiles.username}</Text>
-              </View>
-              <View
-                className={
-                  item.reference
-                    ? 'gap-1 rounded-md bg-light-primary/30 p-3'
-                    : 'gap-1 rounded-md bg-light-secondary/30 p-3'
-                }>
-                {item.reference && <Text className="font-semibold">{item.reference}</Text>}
-                <Text>{item.note}</Text>
-              </View>
-            </View>
-          )}
+          renderItem={({ item }) => <NoteItem item={item} />}
         />
-        <View className="mb-4 mt-auto gap-2">
+        <View className="mb-4 mt-auto flex-row justify-between gap-4 pt-2">
           <Pressable
             onPress={() => setShowVerseModal(true)}
-            className="flex-row items-center gap-2 self-start rounded-2xl border border-light-primary bg-light-primary/15 p-3">
+            className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-primary bg-light-primary/15 p-3">
             <Text className="text-lg font-medium">Bible Verse</Text>
             <AntDesign name="plus" size={15} color="black" />
           </Pressable>
-          <Pressable className="flex-row items-center gap-2 self-start rounded-2xl border border-light-secondary bg-light-secondary/15 p-3">
+          <Pressable
+            onPress={() => setShowTextModal(true)}
+            className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-secondary bg-light-secondary/15 p-3">
             <Text className="text-lg font-medium">Text</Text>
             <AntDesign name="plus" size={15} color="black" />
           </Pressable>
@@ -234,6 +205,7 @@ const GroupPage = () => {
 
       <JoinGroupModal code={currentGroup?.code} bottomSheetModalRef={joinModalRef} />
       <GetVerseModal groupId={id} visible={showVerseModal} setVisible={setShowVerseModal} />
+      <InsertTextModlal groupId={id} visible={showTextModal} setVisible={setShowTextModal} />
     </Container>
   );
 };
