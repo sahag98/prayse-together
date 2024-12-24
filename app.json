@@ -12,13 +12,22 @@
     },
     "plugins": [
       [
+        "@sentry/react-native/expo",
+        {
+          "organization": "sahag",
+          "project": "react-native-oi",
+          "url": "https://sentry.io/"
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "The app accesses your photos to let you setup a profile picture."
         }
       ],
       ["expo-apple-authentication"],
-      ["expo-router"]
+      ["expo-router"],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -28,7 +37,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-image.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -39,8 +48,9 @@
       "bundleIdentifier": "com.sahag98.praysetogether"
     },
     "android": {
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.sahag98.praysetogether"

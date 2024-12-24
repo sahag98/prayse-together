@@ -1,10 +1,10 @@
 import { Pressable, Text, View, TextInput, FlatList } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { Container } from '~/components/Container';
 import { supabase } from '~/utils/supabase';
 import { Tables } from '~/database.types';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '~/providers/auth-provider';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import JoinGroupModal from '~/modals/join-group';
@@ -25,21 +25,6 @@ const GroupPage = () => {
 
   const [currentGroup, setCurrentGroup] = useState<Tables<'study_group'> | null>();
   const [groupNotes, setGroupNotes] = useState<Note[] | null>();
-  const [initialNote, setInitialNote] = useState<string>('');
-  const [showDone, setShowDone] = useState(false);
-
-  // type Verse = string;
-
-  // type Chapter = Verse[];
-
-  // interface Book {
-  //   name: string; // Name of the book (e.g., "Genesis")
-  //   chapters: Chapter[]; // Array of chapters, each chapter is an array of verses
-  // }
-
-  // const bible: Book[] = biblejson;
-  // console.log('BIBLE: ', JSON.stringify(bible[0].chapters[0][0], null, 2));
-
   // callbacks
   const handlePresentJoinModalPress = useCallback(() => {
     joinModalRef.current?.present();
@@ -60,10 +45,17 @@ const GroupPage = () => {
     const { data, error } = await supabase
       .from('group_notes')
       .select('*, profiles(username,avatar_url)')
-      .eq('group_id', id)
-      .order('id', { ascending: false });
+      .eq('group_id', id);
     //@ts-expect-error
     setGroupNotes(data);
+  }
+
+  async function endBibleStudy() {
+    const { data, error } = await supabase
+      .from('study_group')
+      .update({ has_started: false })
+      .eq('id', id)
+      .select();
   }
 
   // async function updateNote() {
@@ -127,25 +119,57 @@ const GroupPage = () => {
 
     // Set up real-time subscription
     const channel = supabase
-      .channel('group_notes')
+      .channel('group')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'group_notes', filter: `group_id=eq.${id}` },
-        (payload) => {
+        async (payload) => {
           if (payload.eventType === 'INSERT') {
             console.log('should UPDATE: ', payload.new);
 
             const newNote = payload.new;
 
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', newNote.user_id)
+              .single();
+
+            console.log('new note: ', newNote);
+
             const noteWithProfile = {
               ...newNote,
               profiles: {
-                avatar_url: currentUser?.avatar_url,
-                username: currentUser?.username,
+                avatar_url: profile?.avatar_url,
+                username: profile?.username,
               },
             };
             //@ts-expect-error
-            setGroupNotes((prev) => [noteWithProfile, ...prev]);
+            setGroupNotes((prev) => [...prev, noteWithProfile]);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'study_group', filter: `id=eq.${id}` },
+        (payload) => {
+          console.log('new!!');
+          if (payload.eventType === 'UPDATE') {
+            if (payload.new.has_started === true) {
+              console.log('STUDY IS STARTING: ', payload.new);
+              // router.push(`/group/${id}`);
+              setCurrentGroup((prev: any) => ({
+                ...prev,
+                has_started: true,
+              }));
+            } else if (!payload.new.has_started) {
+              console.log('STUDY IS ENDING: ', payload.new);
+              setCurrentGroup((prev: any) => ({
+                ...prev,
+                has_started: false,
+              }));
+              router.push(`/group/${id}/end`);
+            }
           }
         }
       )
@@ -158,6 +182,41 @@ const GroupPage = () => {
 
   if (!currentGroup) return;
 
+  if (!currentGroup.has_started && currentGroup.admin_id === currentUser?.id) {
+    return <Redirect href={`/group/${id}/start`} />;
+  }
+
+  if (!currentGroup.has_started) {
+    return (
+      <Container>
+        <View className="flex-1 px-4">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-1">
+              <Pressable
+                onPress={() => {
+                  router.push('/(tabs)/home');
+                }}>
+                <AntDesign name="left" size={24} color="black" />
+              </Pressable>
+              <Text className="text-2xl font-bold">{currentGroup?.name}</Text>
+            </View>
+          </View>
+          <View className="flex-1 items-center justify-center gap-2">
+            <MaterialCommunityIcons
+              className="animate-spin"
+              name="loading"
+              size={70}
+              color="#FFD700"
+            />
+            <Text className="w-4/5  text-center font-medium">
+              Please wait for the admin to start the study.
+            </Text>
+          </View>
+        </View>
+      </Container>
+    );
+  }
+
   return (
     <Container>
       <View className="flex-1 px-4">
@@ -165,42 +224,49 @@ const GroupPage = () => {
           <View className="flex-row items-center gap-1">
             <Pressable
               onPress={() => {
-                if (showDone) {
-                  //updateNote();
-                }
                 router.push('/(tabs)/home');
               }}>
               <AntDesign name="left" size={24} color="black" />
             </Pressable>
             <Text className="text-2xl font-bold">{currentGroup?.name}</Text>
           </View>
-          <Pressable onPress={handlePresentJoinModalPress} className="p-2">
-            <AntDesign name="addusergroup" size={30} color="black" />
-          </Pressable>
+          {currentGroup.has_started && currentUser?.id === currentGroup.admin_id && (
+            <>
+              <Pressable onPress={handlePresentJoinModalPress} className="p-2">
+                <AntDesign name="addusergroup" size={30} color="black" />
+              </Pressable>
+              <Pressable
+                onPress={endBibleStudy}
+                className="rounded-xl border border-red-400 bg-red-100 px-4 py-2">
+                <Text className="text-lg font-bold text-red-500">END</Text>
+              </Pressable>
+            </>
+          )}
         </View>
         <FlatList
           data={groupNotes}
-          inverted
           style={{ marginBottom: 5, flex: 1, marginTop: 15 }}
           contentContainerStyle={{ gap: 15 }}
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item?.id?.toString()}
           renderItem={({ item }) => <NoteItem item={item} />}
         />
-        <View className="mb-4 mt-auto flex-row justify-between gap-4 pt-2">
-          <Pressable
-            onPress={() => setShowVerseModal(true)}
-            className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-primary bg-light-primary/15 p-3">
-            <Text className="text-lg font-medium">Bible Verse</Text>
-            <AntDesign name="plus" size={15} color="black" />
-          </Pressable>
-          <Pressable
-            onPress={() => setShowTextModal(true)}
-            className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-secondary bg-light-secondary/15 p-3">
-            <Text className="text-lg font-medium">Text</Text>
-            <AntDesign name="plus" size={15} color="black" />
-          </Pressable>
-        </View>
+        {currentGroup.has_started && (
+          <View className="mb-4 mt-auto flex-row justify-between gap-4 pt-2">
+            <Pressable
+              onPress={() => setShowVerseModal(true)}
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-primary bg-light-primary/15 p-3">
+              <Text className="text-lg font-medium">Bible Verse</Text>
+              <AntDesign name="plus" size={15} color="black" />
+            </Pressable>
+            <Pressable
+              onPress={() => setShowTextModal(true)}
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-secondary bg-light-secondary/15 p-3">
+              <Text className="text-lg font-medium">Text</Text>
+              <AntDesign name="plus" size={15} color="black" />
+            </Pressable>
+          </View>
+        )}
       </View>
 
       <JoinGroupModal code={currentGroup?.code} bottomSheetModalRef={joinModalRef} />

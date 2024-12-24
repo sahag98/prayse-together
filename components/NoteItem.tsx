@@ -9,32 +9,39 @@ const NoteItem = ({ item }: { item: Note }) => {
       className={
         item.reference
           ? 'gap-1 rounded-md border border-gray-300 bg-light-primary/5 p-3'
-          : 'gap-1 rounded-md border border-gray-300 bg-light-secondary/5 p-3'
+          : 'flex-row items-start gap-3 '
       }>
-      <View className="mb-2 flex-row items-center justify-between">
+      <View className="mb-0 flex-row items-center justify-between">
         {item.reference && <Text className="text-lg font-semibold">{item.reference}</Text>}
         <View
           className={
-            item.reference ? 'flex-row items-center gap-2' : 'flex-row-reverse items-center gap-2'
+            item.reference ? 'flex-row items-center gap-2' : 'flex-row items-center gap-2'
           }>
-          <Text className={item.reference ? 'text-sm' : 'text-lg font-semibold'}>
-            {item.reference && 'by'} {item.profiles.username}
-          </Text>
+          {item.reference && (
+            <Text className={item.reference ? 'text-sm' : 'text-lg font-semibold'}>
+              {item.reference && 'by'} {item.profiles.username}
+            </Text>
+          )}
+
           <View className="flex-row items-center gap-2 self-end">
             {item.profiles?.avatar_url ? (
               <Image source={{ uri: item.profiles.avatar_url }} />
             ) : (
-              <Feather
-                className="rounded-full border border-gray-300 bg-gray-200 p-1"
-                name="user"
-                size={20}
-                color="black"
-              />
+              <View className="size-10 items-center justify-center rounded-full bg-gray-200">
+                <Text className="text-base font-medium uppercase">
+                  {item.profiles.username.charAt(0)}
+                  {item.profiles.username.charAt(1)}
+                </Text>
+              </View>
             )}
           </View>
         </View>
       </View>
-      <Text>{item.note}</Text>
+      <View className="gap-0">
+        {!item.reference && <Text className="text-lg font-medium">{item.profiles.username}</Text>}
+
+        <Text className="flex-1">{item.note}</Text>
+      </View>
     </View>
   );
 };

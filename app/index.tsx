@@ -4,7 +4,16 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '~/utils/supabase';
 import { useAuth } from '~/providers/auth-provider';
-import { Redirect } from 'expo-router';
+import { ErrorBoundaryProps, Redirect } from 'expo-router';
+
+// export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+//   return (
+//     <View style={{ flex: 1, backgroundColor: 'red' }}>
+//       <Text>{error.message}</Text>
+//       <Text onPress={retry}>Try Again?</Text>
+//     </View>
+//   );
+// }
 export default function Home() {
   const { currentUser } = useAuth();
 

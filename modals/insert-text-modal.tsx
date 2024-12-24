@@ -55,11 +55,11 @@ const InsertTextModlal = ({
             <Pressable onPress={() => setVisible(false)} className="absolute right-2 top-2 p-2">
               <AntDesign name="close" size={24} color="black" />
             </Pressable>
-            <Text className="mb-2 text-xl font-semibold">Add Note</Text>
+            <Text className="mb-2 text-xl font-semibold">Add Text</Text>
             <TextInput
               autoFocus
               className="max-h-52 min-h-32 w-full rounded-lg border p-3 font-medium placeholder:text-gray-500"
-              placeholder="Enter note"
+              placeholder="Enter text"
               value={note}
               multiline
               numberOfLines={5}

@@ -168,7 +168,7 @@ export type Database = {
           code: number
           created_at: string
           description: string | null
-          frequency: string
+          has_started: boolean
           id: number
           name: string
           note_id: number | null
@@ -178,7 +178,7 @@ export type Database = {
           code: number
           created_at?: string
           description?: string | null
-          frequency: string
+          has_started?: boolean
           id?: number
           name: string
           note_id?: number | null
@@ -188,7 +188,7 @@ export type Database = {
           code?: number
           created_at?: string
           description?: string | null
-          frequency?: string
+          has_started?: boolean
           id?: number
           name?: string
           note_id?: number | null

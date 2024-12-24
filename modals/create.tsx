@@ -1,13 +1,45 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Button, Pressable, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Pressable,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BottomSheetModal, BottomSheetView, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetModalProvider,
+  BottomSheetTextInput,
+} from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Picker } from '@react-native-picker/picker';
 import { supabase } from '~/utils/supabase';
 import { router } from 'expo-router';
 import { Tables } from '~/database.types';
+import { useAuth } from '~/providers/auth-provider';
+import { useQueryClient } from '@tanstack/react-query';
+
+const InputComponent = ({ value, setValue }: { value: string; setValue: any }) => {
+  const [title, setTitle] = useState('');
+  return (
+    <BottomSheetTextInput
+      style={{
+        borderBottomWidth: 1,
+      }}
+      placeholder="Title"
+      value={value}
+      className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
+      onChangeText={setValue}
+    />
+  );
+};
+
 const CreateGroupBottomModal = ({
   bottomSheetModalRef,
   currentUser,
@@ -17,11 +49,12 @@ const CreateGroupBottomModal = ({
 }) => {
   const [groupname, setGroupname] = useState('');
   const [groupdescription, setGroupdescription] = useState('');
-  const [groupFrequency, setGroupFrequency] = useState('');
-  const [groupCode, setGroupCode] = useState<number | null>();
+  const [groupCode, setGroupCode] = useState<any | null>();
   const [activeTab, setActiveTab] = useState('create');
+  const queryClient = useQueryClient();
+  const { getUserGroups } = useAuth();
   // ref
-  const snapPoints = useMemo(() => ['50%', '75%'], []);
+  const snapPoints = useMemo(() => ['25%', '50%'], []);
   // callbacks
 
   const handleSheetChanges = useCallback((index: number) => {
@@ -38,7 +71,6 @@ const CreateGroupBottomModal = ({
           {
             name: groupname,
             description: groupdescription,
-            frequency: groupFrequency,
             code: randomCode,
             admin_id: currentUser?.id,
           },
@@ -64,6 +96,7 @@ const CreateGroupBottomModal = ({
       bottomSheetModalRef.current?.close();
       setGroupname('');
       setGroupdescription('');
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
       // getUserGroups();
     }
   }
@@ -96,8 +129,10 @@ const CreateGroupBottomModal = ({
     } catch (error) {
       console.log('something went wrong: ', error);
     } finally {
+      getUserGroups();
       bottomSheetModalRef.current?.close();
       setGroupCode(null);
+      queryClient.invalidateQueries({ queryKey: 'groups' });
     }
   }
 
@@ -107,7 +142,7 @@ const CreateGroupBottomModal = ({
       <BottomSheetModal
         ref={bottomSheetModalRef}
         snapPoints={snapPoints}
-        index={1}
+        index={2}
         handleStyle={{
           borderTopWidth: 1,
           borderTopColor: 'gainsboro',
@@ -135,52 +170,21 @@ const CreateGroupBottomModal = ({
                 <Text className="text-lg font-medium">Create Bible study group</Text>
               </View>
               <View className="mt-4 gap-3">
-                <TextInput
-                  value={groupname}
+                {/* <InputComponent value={groupname} setValue={setGroupname} /> */}
+                <BottomSheetTextInput
+                  defaultValue={groupname}
                   onChangeText={setGroupname}
                   placeholder="Enter group name"
                   className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
                   //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
                 />
-                <TextInput
-                  value={groupdescription}
+                <BottomSheetTextInput
+                  defaultValue={groupdescription}
                   onChangeText={setGroupdescription}
                   placeholder="Enter group description"
                   className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
                   //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
                 />
-                <View className="gap-3">
-                  <Text className="text-lg font-medium">Frequency</Text>
-                  <View className="w-full flex-row gap-3">
-                    <Pressable
-                      onPress={() => setGroupFrequency('daily')}
-                      className={
-                        groupFrequency === 'daily'
-                          ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                          : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                      }>
-                      <Text className="font-semibold">Daily</Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => setGroupFrequency('weekly')}
-                      className={
-                        groupFrequency === 'weekly'
-                          ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                          : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                      }>
-                      <Text className="font-semibold">Weekly</Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => setGroupFrequency('monthly')}
-                      className={
-                        groupFrequency === 'monthly'
-                          ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                          : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                      }>
-                      <Text className="font-semibold">Monthly</Text>
-                    </Pressable>
-                  </View>
-                </View>
                 <Pressable
                   onPress={finalizeSetup}
                   className="mt-1 items-center justify-center rounded-3xl bg-light-primary p-4">
@@ -195,10 +199,11 @@ const CreateGroupBottomModal = ({
                 <Text className="text-lg font-medium">Join Bible study group</Text>
               </View>
               <View className="mt-4 gap-3">
-                <TextInput
-                  value={groupdescription}
-                  onChangeText={setGroupdescription}
+                <BottomSheetTextInput
+                  defaultValue={groupCode}
+                  onChangeText={setGroupCode}
                   placeholder="Enter group code"
+                  keyboardType="numeric"
                   className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
                   //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
                 />

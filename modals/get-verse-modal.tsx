@@ -66,7 +66,7 @@ const GetVerseModal = ({
     }
   }
   return (
-    <Modal style={{ flex: 1 }} animationType="fade" transparent visible={visible}>
+    <Modal animationType="fade" transparent visible={visible}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
