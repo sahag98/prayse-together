@@ -43,10 +43,13 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   };
 
   async function getUser(user: User | undefined) {
-    if (!user) return;
-    const { data: profiles } = await supabase.from('profiles').select('*').eq('id', user.id);
-    if (!profiles) return;
-    setCurrentUser(profiles[0]);
+    if (user) {
+      const { data: profiles } = await supabase.from('profiles').select('*').eq('id', user.id);
+      if (profiles) {
+        setCurrentUser(profiles[0]);
+      }
+    }
+
     setIsReady(true);
   }
 
@@ -62,15 +65,17 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       console.error('Error fetching user groups:', error);
       return;
     }
-    //@ts-expect-error
-    setUserGroups(data);
+    return data;
   }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const user = session?.user;
-      // console.log('get session: ', user);
+
       getUser(user);
+      getUserGroups();
+      // setIsReady(true);
+      // console.log('get session: ', user);
     });
 
     supabase.auth.onAuthStateChange((_event, session) => {
@@ -102,8 +107,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'group_members' },
         (payload) => {
-          console.log('payload: ', payload);
-          getUserGroups();
+          console.log('NEW MEMBER payload: ', payload.new);
+
+          const newMember = payload.new;
+          // getUserGroups();
         }
       )
       .subscribe();
@@ -113,7 +120,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   if (!isReady) {
-    return <ActivityIndicator />;
+    return;
   }
 
   return (

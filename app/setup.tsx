@@ -7,6 +7,8 @@ import {
   Dimensions,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Container } from '~/components/Container';
 import { supabase } from '~/utils/supabase';
@@ -211,166 +213,170 @@ export default function Setup() {
   return (
     <>
       <Container>
-        <View className="w-full flex-1 self-center">
-          {/* Progress Bar */}
-          <View className="gap-2 px-4">
-            <View className="flex-row items-center gap-1">
-              <Text className="font-medium">{step.counter}/3:</Text>
-              <Text className="font-medium">{step.title}</Text>
-            </View>
-            <View className="h-3 w-full rounded-lg bg-gray-200">
-              <Animated.View
-                className="bg-light-primary"
-                style={[{ height: '100%', borderRadius: 5 }, progressBarStyle]}
-              />
-            </View>
-          </View>
-          <Text className="mt-5 pl-4 text-2xl font-bold">Hey! Let's setup your app 👋</Text>
-          <View className="flex-1 justify-center gap-4">
-            <Animated.View
-              style={[animatedStyle, { flexDirection: 'row', width: screenWidth * 3 }]}>
-              <View className="gap-5 px-4" style={{ width: screenWidth }}>
-                {step.counter === 1 && (
-                  <>
-                    {profileImg ? (
-                      <Image
-                        source={{ uri: profileImg }}
-                        accessibilityLabel="Avatar"
-                        className="size-40 self-center rounded-full "
-                        //   style={{ width: 40, height: 40 }}
-                      />
-                    ) : (
-                      <Pressable
-                        onPress={uploadAvatar}
-                        className="size-40 items-center justify-center gap-3 self-center rounded-full bg-gray-200 p-2">
-                        {uploading ? (
-                          <ActivityIndicator />
-                        ) : (
-                          <>
-                            <Feather name="upload" size={40} color="black" />
-                            <Text className="w-4/5 text-center text-sm leading-4">
-                              Upload profile image
-                            </Text>
-                          </>
-                        )}
-                      </Pressable>
-                    )}
-
-                    <TextInput
-                      value={username}
-                      onChangeText={setUsername}
-                      placeholder="Enter your username"
-                      className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
-                      //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
-                    />
-                    <Pressable
-                      disabled={!username || username.length <= 2}
-                      className="items-center justify-center rounded-3xl bg-light-primary p-4 disabled:bg-light-primary/50"
-                      onPress={handleNextStep}>
-                      <Text className="text-base font-semibold">Next</Text>
-                    </Pressable>
-                  </>
-                )}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View className="w-full flex-1 self-center">
+            {/* Progress Bar */}
+            <View className="gap-2 px-4">
+              <View className="flex-row items-center gap-1">
+                <Text className="font-medium">{step.counter}/3:</Text>
+                <Text className="font-medium">{step.title}</Text>
               </View>
-              <View className="px-4" style={{ width: screenWidth }}>
-                {step.counter === 2 && (
-                  <View className="gap-3">
-                    <Text className="font-medium">Are you new to the Christian faith?</Text>
-                    <View className="w-full flex-row gap-3">
+              <View className="h-3 w-full rounded-lg bg-gray-200">
+                <Animated.View
+                  className="bg-light-primary"
+                  style={[{ height: '100%', borderRadius: 5 }, progressBarStyle]}
+                />
+              </View>
+            </View>
+            <Text className="mt-5 pl-4 text-2xl font-bold">Hey! Let's setup your app 👋</Text>
+            <View className="flex-1 justify-center gap-4">
+              <Animated.View
+                style={[animatedStyle, { flexDirection: 'row', width: screenWidth * 3 }]}>
+                <View className="gap-5 px-4" style={{ width: screenWidth }}>
+                  {step.counter === 1 && (
+                    <>
+                      {profileImg ? (
+                        <Image
+                          source={{ uri: profileImg }}
+                          accessibilityLabel="Avatar"
+                          className="size-40 self-center rounded-full "
+                          //   style={{ width: 40, height: 40 }}
+                        />
+                      ) : (
+                        <Pressable
+                          onPress={uploadAvatar}
+                          className="size-40 items-center justify-center gap-3 self-center rounded-full bg-gray-200 p-2">
+                          {uploading ? (
+                            <ActivityIndicator />
+                          ) : (
+                            <>
+                              <Feather name="upload" size={40} color="black" />
+                              <Text className="w-4/5 text-center text-sm leading-4">
+                                Upload profile image
+                              </Text>
+                            </>
+                          )}
+                        </Pressable>
+                      )}
+
+                      <TextInput
+                        value={username}
+                        onChangeText={setUsername}
+                        placeholder="Enter your username"
+                        className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
+                        //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
+                      />
                       <Pressable
-                        onPress={() => setIsNew(true)}
-                        className={
-                          isNew === true
-                            ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                            : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                        }>
-                        <Text className="font-semibold">Yes</Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => setIsNew(false)}
-                        className={
-                          isNew === false
-                            ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                            : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                        }>
-                        <Text className="font-semibold">No</Text>
-                      </Pressable>
-                    </View>
-                    {/* <TextInput
-                      placeholder="Enter your username"
-                      className="placeholder:text-light-foreground/60 rounded-3xl bg-gray-200 p-4"
-                    /> */}
-                    <Text className="mt-1 font-medium">
-                      Do you prefer group studies or individual studies?
-                    </Text>
-                    <View className="w-full flex-row gap-3">
-                      <Pressable
-                        onPress={() => setStudyType('group')}
-                        className={
-                          studyType === 'group'
-                            ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                            : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                        }>
-                        <Text className="font-semibold">Group</Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => setStudyType('individual')}
-                        className={
-                          studyType === 'individual'
-                            ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                            : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                        }>
-                        <Text className="font-semibold">Individual</Text>
-                      </Pressable>
-                    </View>
-                    {/* <TextInput
-                      placeholder="Group or Individual"
-                      className="placeholder:text-light-foreground/60 rounded-3xl bg-gray-200 p-4"
-                    /> */}
-                    <View className="mt-5 gap-3">
-                      <Pressable
-                        disabled={!studyType}
-                        className="items-center justify-center rounded-3xl bg-light-primary p-4 transition-all disabled:bg-light-primary/50"
+                        disabled={!username || username.length <= 2}
+                        className="items-center justify-center rounded-3xl bg-light-primary p-4 disabled:bg-light-primary/50"
                         onPress={handleNextStep}>
                         <Text className="text-base font-semibold">Next</Text>
                       </Pressable>
-                      <Pressable
-                        className="items-center justify-center rounded-3xl bg-gray-200 p-4"
-                        onPress={handlePreviousStep}>
-                        <Text className="text-base font-semibold">Back</Text>
-                      </Pressable>
+                    </>
+                  )}
+                </View>
+                <View className="px-4" style={{ width: screenWidth }}>
+                  {step.counter === 2 && (
+                    <View className="gap-3">
+                      <Text className="font-medium">Are you new to the Christian faith?</Text>
+                      <View className="w-full flex-row gap-3">
+                        <Pressable
+                          onPress={() => setIsNew(true)}
+                          className={
+                            isNew === true
+                              ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
+                              : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
+                          }>
+                          <Text className="font-semibold">Yes</Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => setIsNew(false)}
+                          className={
+                            isNew === false
+                              ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
+                              : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
+                          }>
+                          <Text className="font-semibold">No</Text>
+                        </Pressable>
+                      </View>
+                      {/* <TextInput
+                      placeholder="Enter your username"
+                      className="placeholder:text-light-foreground/60 rounded-3xl bg-gray-200 p-4"
+                    /> */}
+                      <Text className="mt-1 font-medium">
+                        Do you prefer group studies or individual studies?
+                      </Text>
+                      <View className="w-full flex-row gap-3">
+                        <Pressable
+                          onPress={() => setStudyType('group')}
+                          className={
+                            studyType === 'group'
+                              ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
+                              : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
+                          }>
+                          <Text className="font-semibold">Group</Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => setStudyType('individual')}
+                          className={
+                            studyType === 'individual'
+                              ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
+                              : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
+                          }>
+                          <Text className="font-semibold">Individual</Text>
+                        </Pressable>
+                      </View>
+                      {/* <TextInput
+                      placeholder="Group or Individual"
+                      className="placeholder:text-light-foreground/60 rounded-3xl bg-gray-200 p-4"
+                    /> */}
+                      <View className="mt-5 gap-3">
+                        <Pressable
+                          disabled={!studyType}
+                          className="items-center justify-center rounded-3xl bg-light-primary p-4 transition-all disabled:bg-light-primary/50"
+                          onPress={handleNextStep}>
+                          <Text className="text-base font-semibold">Next</Text>
+                        </Pressable>
+                        <Pressable
+                          className="items-center justify-center rounded-3xl bg-gray-200 p-4"
+                          onPress={handlePreviousStep}>
+                          <Text className="text-base font-semibold">Back</Text>
+                        </Pressable>
+                      </View>
                     </View>
-                  </View>
-                )}
-              </View>
-              <View className="px-4" style={{ width: screenWidth }}>
-                {step.counter === 3 && (
-                  <>
-                    {studyType === 'group' && (
-                      <Pressable
-                        className="items-center justify-center gap-3 rounded-3xl border border-dashed bg-light-primary p-6"
-                        onPress={handlePresentModalPress}>
-                        <AntDesign name="plus" size={40} color="black" />
-                        <Text className="text-base font-semibold">Create study group</Text>
-                      </Pressable>
-                    )}
-                    <View className="mt-5 gap-3">
-                      <Pressable
-                        className="items-center justify-center rounded-3xl bg-gray-200 p-4"
-                        onPress={handlePreviousStep}>
-                        <Text className="text-base font-semibold">Back</Text>
-                      </Pressable>
-                    </View>
-                  </>
-                )}
-              </View>
-            </Animated.View>
+                  )}
+                </View>
+                <View className="px-4" style={{ width: screenWidth }}>
+                  {step.counter === 3 && (
+                    <>
+                      {studyType === 'group' && (
+                        <Pressable
+                          className="items-center justify-center gap-3 rounded-3xl border border-dashed bg-light-primary p-6"
+                          onPress={handlePresentModalPress}>
+                          <AntDesign name="plus" size={40} color="black" />
+                          <Text className="text-base font-semibold">Create study group</Text>
+                        </Pressable>
+                      )}
+                      <View className="mt-5 gap-3">
+                        <Pressable
+                          className="items-center justify-center rounded-3xl bg-gray-200 p-4"
+                          onPress={handlePreviousStep}>
+                          <Text className="text-base font-semibold">Back</Text>
+                        </Pressable>
+                      </View>
+                    </>
+                  )}
+                </View>
+              </Animated.View>
+            </View>
+            <CreateGroupModal
+              updateProfile={updateProfile}
+              bottomSheetModalRef={bottomSheetModalRef}
+            />
           </View>
-          <CreateGroupModal
-            updateProfile={updateProfile}
-            bottomSheetModalRef={bottomSheetModalRef}
-          />
-        </View>
+        </KeyboardAvoidingView>
       </Container>
     </>
   );

@@ -54,18 +54,24 @@ export type Database = {
           group_id: number
           id: number
           note: string | null
+          reference: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           group_id: number
           id?: number
           note?: string | null
+          reference?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           group_id?: number
           id?: number
           note?: string | null
+          reference?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -73,6 +79,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "study_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_notes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -155,7 +168,7 @@ export type Database = {
           code: number
           created_at: string
           description: string | null
-          frequency: string
+          has_started: boolean
           id: number
           name: string
           note_id: number | null
@@ -165,7 +178,7 @@ export type Database = {
           code: number
           created_at?: string
           description?: string | null
-          frequency: string
+          has_started?: boolean
           id?: number
           name: string
           note_id?: number | null
@@ -175,7 +188,7 @@ export type Database = {
           code?: number
           created_at?: string
           description?: string | null
-          frequency?: string
+          has_started?: boolean
           id?: number
           name?: string
           note_id?: number | null

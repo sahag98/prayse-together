@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Button, Pressable, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Button, Pressable, TextInput, Share } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModal, BottomSheetView, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
@@ -15,12 +15,22 @@ const JoinGroupModal = ({
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
 }) => {
   // ref
-  const snapPoints = useMemo(() => ['50%'], []);
+  const snapPoints = useMemo(() => ['30%'], []);
   // callbacks
 
   const handleSheetChanges = useCallback((index: number) => {
     // console.log('handleSheetChanges', index);
   }, []);
+
+  async function shareGroup() {
+    await Share.share({
+      title: `Hey! Join my bible study group 📖`,
+      message: `Hey! Join my bible study group 📖 \n Use this code to join: ${code}`,
+    });
+    // Linking.openURL(`market://details?id=${config.androidPackageName}`);
+
+    // Linking.openURL(`itms-apps://itunes.apple.com/app/id${config.iosItemId}`);
+  }
 
   // renders
   return (
@@ -43,10 +53,18 @@ const JoinGroupModal = ({
               <Text className="text-4xl">#</Text>
               <Text className="rounded-xl bg-light-primary p-3 text-4xl font-bold">{code}</Text>
             </Pressable>
-            <Pressable className="mt-auto w-full flex-row items-center justify-between gap-3 rounded-lg bg-light-secondary p-4">
-              <Text className="text-xl font-semibold">Share app</Text>
-              <Feather name="share" size={24} color="black" />
-            </Pressable>
+            <View className="mt-auto gap-3">
+              <Pressable
+                onPress={shareGroup}
+                className=" w-full flex-row items-center justify-between gap-3 rounded-lg bg-light-secondary p-4">
+                <Text className="text-xl font-semibold">Share code</Text>
+                <Feather name="share" size={24} color="black" />
+              </Pressable>
+              {/* <Pressable className=" w-full flex-row items-center justify-between gap-3 rounded-lg bg-light-secondary p-4">
+                <Text className="text-xl font-semibold">Share app</Text>
+                <Feather name="share" size={24} color="black" />
+              </Pressable> */}
+            </View>
           </View>
         </BottomSheetView>
       </BottomSheetModal>

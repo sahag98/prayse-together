@@ -1,5 +1,14 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Button, Pressable, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Pressable,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModal, BottomSheetView, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
@@ -18,7 +27,7 @@ const CreateBottomModal = ({
   const [groupdescription, setGroupdescription] = useState('');
   const [groupFrequency, setGroupFrequency] = useState('');
   // ref
-  const snapPoints = useMemo(() => ['75%'], []);
+  const snapPoints = useMemo(() => ['100%'], []);
   // callbacks
 
   const handleSheetChanges = useCallback((index: number) => {
@@ -43,7 +52,7 @@ const CreateBottomModal = ({
 
       if (!data) return;
       console.log('group info:', data[0].id);
-      router.push(`/group/${data[0].id}`);
+      router.push(`/group/${data[0].id}/start`);
     } catch (error) {
     } finally {
       updateProfile();
@@ -83,7 +92,7 @@ const CreateBottomModal = ({
                 className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
                 //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
               />
-              <View className="gap-3">
+              {/* <View className="gap-3">
                 <Text className="text-lg font-medium">Frequency</Text>
                 <View className="w-full flex-row gap-3">
                   <Pressable
@@ -114,7 +123,7 @@ const CreateBottomModal = ({
                     <Text className="font-semibold">Monthly</Text>
                   </Pressable>
                 </View>
-              </View>
+              </View> */}
               <Pressable
                 onPress={finalizeSetup}
                 className="mt-4 items-center justify-center rounded-3xl bg-light-primary p-4">

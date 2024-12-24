@@ -27,8 +27,11 @@ export default function Login() {
           token: credential.identityToken,
         });
 
+        console.log('HEREE');
+
         if (!error) {
           console.log('Signed in!');
+          router.push('/(tabs)/home');
           //   router.push(COMMUNITY_SCREEN);
         }
       } else {
@@ -77,7 +80,7 @@ export default function Login() {
 
         setCurrentUser(profiles[0]);
 
-        router.push('/');
+        router.push('/(tabs)/home');
       } else if (result.type === 'cancel') {
         console.log('info', 'Google sign-in was cancelled');
       }
