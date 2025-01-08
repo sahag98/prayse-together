@@ -1,4 +1,5 @@
 import { Session, User } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Database, Tables } from '~/database.types';
@@ -29,12 +30,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [currentUser, setCurrentUser] = useState<Tables<'profiles'> | null>(null);
   const [userGroups, setUserGroups] = useState<GroupMembers[] | null>(null);
   const [isReady, setIsReady] = useState(false);
-
+  const queryClient = useQueryClient();
   const getGoogleOAuthUrl = async () => {
     const result = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'exp://192.168.1.44:8081',
+        redirectTo: 'prayse-together://',
         // prayseapp://google-auth
         // exp://192.168.1.110:19000
       },
@@ -58,8 +59,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     let { data, error } = await supabase
       .from('group_members')
-      .select('*, study_group(*), profiles(*)')
-      .eq('user_id', currentUser.id!);
+      .select('*, study_group(*), profiles(username)')
+      .eq('user_id', currentUser.id!)
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching user groups:', error);
@@ -68,20 +70,40 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     return data;
   }
 
+  async function getGroupMembers(id: any) {
+    if (!currentUser) return;
+    const { data: group_members, error } = await supabase
+      .from('group_members')
+      .select('*, profiles(*)')
+      .eq('group_id', id)
+      .neq('user_id', currentUser.id);
+
+    if (group_members) {
+      return group_members;
+    }
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const user = session?.user;
+      if (user) {
+        getUser(user);
+        // getUserGroups();
+      } else {
+        setIsReady(true);
+      }
 
-      getUser(user);
-      getUserGroups();
       // setIsReady(true);
       // console.log('get session: ', user);
     });
 
     supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user;
-
-      getUser(user);
+      if (user) {
+        getUser(user);
+      } else {
+        setIsReady(true);
+      }
     });
 
     // const channels = supabase
@@ -108,8 +130,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         { event: 'INSERT', schema: 'public', table: 'group_members' },
         (payload) => {
           console.log('NEW MEMBER payload: ', payload.new);
-
+          // queryClient.invalidateQueries({ queryKey: ['groups'] });
           const newMember = payload.new;
+          // getGroupMembers(newMember.group_id);
           // getUserGroups();
         }
       )

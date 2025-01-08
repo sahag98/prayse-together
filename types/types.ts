@@ -26,6 +26,7 @@ export interface Lesson {
 
 export interface Note {
   id: number;
+  created_at: string;
   note: string | null;
   reference: string | null;
   profiles: Profile;
@@ -36,5 +37,6 @@ export interface Profile {
   id: string;
   username: string;
   avatar_url: string;
+  token: string;
   // Add other profile fields as necessary
 }

@@ -1,17 +1,22 @@
 import AuthProvider from '~/providers/auth-provider';
 import '../global.css';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Stack, useNavigationContainerRef } from 'expo-router';
+import { Slot, Stack, useNavigationContainerRef } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
 import { isRunningInExpoGo } from 'expo';
-import { useEffect } from 'react';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query';
+import { useCallback, useEffect, useState } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useNotificationObserver } from '~/hooks/useNotificationObserver';
+import { Text, View } from 'react-native';
+
+SplashScreen.preventAutoHideAsync();
+
+SplashScreen.setOptions({
+  duration: 500,
+  fade: true,
+});
+
 const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: !isRunningInExpoGo(),
 });
@@ -30,23 +35,38 @@ Sentry.init({
 const queryClient = new QueryClient();
 
 function Layout() {
-  const ref = useNavigationContainerRef();
-
+  const [appIsReady, setAppIsReady] = useState(false);
   useEffect(() => {
-    if (ref?.current) {
-      navigationIntegration.registerNavigationContainer(ref);
+    async function prepare() {
+      try {
+        // Pre-load fonts, make any API calls you need to do here
+
+        // Artificially delay for two seconds to simulate a slow loading
+        // experience. Remove this if you copy and paste the code!
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // Tell the application to render
+        setAppIsReady(true);
+        SplashScreen.hide();
+      }
     }
-  }, [ref]);
+
+    prepare();
+  }, []);
+
+  if (!appIsReady) {
+    return null;
+  }
+
   return (
     <GestureHandlerRootView>
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-            <Stack.Screen name="group" />
-          </Stack>
-        </QueryClientProvider>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Slot />
+        </AuthProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }

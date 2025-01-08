@@ -25,7 +25,7 @@ const JoinGroupModal = ({
   async function shareGroup() {
     await Share.share({
       title: `Hey! Join my bible study group 📖`,
-      message: `Hey! Join my bible study group 📖 \n Use this code to join: ${code}`,
+      message: `Hey! Join my bible study group 📖 \n Use this code to join: ${code} if you are approved for testing. \n If not, reach out to @sahag98 on Instagram so that he can add you to the testing!`,
     });
     // Linking.openURL(`market://details?id=${config.androidPackageName}`);
 
@@ -36,13 +36,10 @@ const JoinGroupModal = ({
   return (
     <BottomSheetModalProvider>
       <BottomSheetModal
+        containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
         ref={bottomSheetModalRef}
         snapPoints={snapPoints}
         index={1}
-        handleStyle={{
-          borderTopWidth: 1,
-          borderTopColor: 'gainsboro',
-        }}
         onChange={handleSheetChanges}>
         <BottomSheetView style={styles.contentContainer}>
           <View className="flex-1 items-center justify-center gap-3 p-2">

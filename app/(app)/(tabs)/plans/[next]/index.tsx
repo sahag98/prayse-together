@@ -14,7 +14,9 @@ import { useQuery } from '@tanstack/react-query';
 import { AntDesign, Feather } from '@expo/vector-icons';
 
 const Plans = () => {
-  const { title, slug } = useLocalSearchParams();
+  const { next, title } = useLocalSearchParams();
+
+  //   console.log('params: ', params);
 
   const { data, isFetched, isLoadingError, isLoading } = useQuery({
     queryKey: ['study'],
@@ -23,7 +25,7 @@ const Plans = () => {
 
   async function fetchSeries() {
     try {
-      const response = await fetch(`https://bibletalk.tv/plans/${slug}.json`);
+      const response = await fetch(`https://bibletalk.tv/plans/${next}.json`);
       if (!response.ok) {
         throw new Error('Failed to fetch Bible plans');
       }
@@ -40,16 +42,16 @@ const Plans = () => {
 
   return (
     <Container>
-      <View className="flex-1 gap-3 px-4">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-1">
+      <View className="flex-1 gap-3">
+        <View className="mb-2 flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
             <Pressable
               onPress={() => {
                 router.push('/plans');
               }}>
               <AntDesign name="left" size={24} color="black" />
             </Pressable>
-            <Text className="text-2xl font-bold">{title} Plans</Text>
+            <Text className="text-3xl font-bold">{title} Plans</Text>
           </View>
         </View>
         <FlatList
@@ -83,7 +85,7 @@ const Plans = () => {
               </View>
 
               <Pressable
-                onPress={() => router.push(`/plans/${item.slug}?title=${item.title}`)}
+                onPress={() => router.push(`/plans/${next}/${item.slug}?title=${item.title}`)}
                 className=" items-center justify-center rounded-full bg-light-primary px-4 py-3">
                 <Text className=" font-bold">View Study</Text>
               </Pressable>

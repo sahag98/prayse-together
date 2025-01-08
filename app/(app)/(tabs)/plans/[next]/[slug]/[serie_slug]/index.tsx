@@ -32,6 +32,12 @@ const SeriePage = () => {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta name="description" content="A seven-lesson course introducing the fundamentals of Christianity, covering belief in God, the Bible, Jesus Christ, salvation, and Christian living.">
+            <style>
+            body {
+              font-family: 'Roboto', sans-serif;
+              font-size: 18px;
+            }
+            </style>
             <title>Serie Page</title>
           </head>
           <body>
@@ -49,15 +55,15 @@ const SeriePage = () => {
 
   return (
     <Container>
-      <View className="flex-row items-center justify-between px-4">
-        <View className="flex-row items-center gap-1">
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
           <Pressable
             onPress={() => {
               router.back();
             }}>
             <AntDesign name="left" size={24} color="black" />
           </Pressable>
-          <Text className="text-2xl font-bold">{name}</Text>
+          <Text className="flex-1 text-3xl font-bold">{name}</Text>
         </View>
       </View>
       {/* <RenderHTML contentWidth={width} source={{ html: `${htmlContent}` }} /> */}
@@ -89,8 +95,8 @@ const SeriePage = () => {
         }}
         className={
           isFinished
-            ? 'w-full items-center  justify-center self-center bg-light-primary p-4'
-            : 'w-full items-center  justify-center self-center bg-gray-200 p-4'
+            ? 'w-full items-center justify-center self-center bg-light-primary p-4'
+            : 'w-full items-center justify-center self-center bg-gray-200 p-4'
         }>
         <Text
           className={isFinished ? 'text-lg font-semibold' : 'text-lg font-semibold text-gray-400'}>

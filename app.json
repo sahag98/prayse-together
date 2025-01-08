@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "prayse-together",
+    "name": "Bible Study",
     "slug": "prayse-together",
     "version": "1.0.0",
     "newArchEnabled": true,
@@ -11,6 +11,18 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FAF9F6",
+          "image": "./assets/prayse-together-logo.png",
+          "dark": {
+            "image": "./assets/prayse-together-logo.png",
+            "backgroundColor": "#FAF9F6"
+          },
+          "imageWidth": 200
+        }
+      ],
       [
         "@sentry/react-native/expo",
         {
@@ -39,7 +51,7 @@
     "splash": {
       "image": "./assets/splash-image.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F2F0E4"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -53,7 +65,8 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sahag98.praysetogether"
+      "package": "com.sahag98.praysetogether",
+      "permissions": ["android.permission.RECORD_AUDIO", "android.permission.RECORD_AUDIO"]
     },
     "extra": {
       "router": {
@@ -62,6 +75,12 @@
       "eas": {
         "projectId": "47f58c9f-8bbb-4f7e-81c1-4aaa9ef1fce5"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/47f58c9f-8bbb-4f7e-81c1-4aaa9ef1fce5"
     }
   }
 }

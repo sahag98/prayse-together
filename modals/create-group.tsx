@@ -8,14 +8,21 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BottomSheetModal, BottomSheetView, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetModalProvider,
+  BottomSheetTextInput,
+} from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Picker } from '@react-native-picker/picker';
 import { supabase } from '~/utils/supabase';
 import { router } from 'expo-router';
+import { useAuth } from '~/providers/auth-provider';
 const CreateBottomModal = ({
   bottomSheetModalRef,
   updateProfile,
@@ -23,11 +30,13 @@ const CreateBottomModal = ({
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
   updateProfile: () => void;
 }) => {
+  const { currentUser } = useAuth();
   const [groupname, setGroupname] = useState('');
   const [groupdescription, setGroupdescription] = useState('');
   const [groupFrequency, setGroupFrequency] = useState('');
+  const [isFinalizing, setIsFinalizing] = useState(false);
   // ref
-  const snapPoints = useMemo(() => ['100%'], []);
+  const snapPoints = useMemo(() => ['25%', '50%'], []);
   // callbacks
 
   const handleSheetChanges = useCallback((index: number) => {
@@ -35,6 +44,7 @@ const CreateBottomModal = ({
   }, []);
 
   async function finalizeSetup() {
+    setIsFinalizing(true);
     const randomCode = Math.floor(100000 + Math.random() * 900000);
     try {
       // Generate a random 6-digit number
@@ -44,18 +54,30 @@ const CreateBottomModal = ({
           {
             name: groupname,
             description: groupdescription,
-            frequency: groupFrequency,
             code: randomCode,
+            admin_id: currentUser?.id,
           },
         ])
         .select();
 
       if (!data) return;
+
+      const { data: insertMemberData, error: insertMemberError } = await supabase
+        .from('group_members')
+        .insert([
+          {
+            group_id: data[0].id,
+            user_id: currentUser?.id,
+            is_admin: true,
+          },
+        ])
+        .select();
       console.log('group info:', data[0].id);
-      router.push(`/group/${data[0].id}/start`);
     } catch (error) {
     } finally {
       updateProfile();
+      setIsFinalizing(false);
+      // router.push(`/(app)/(tabs)`);
     }
   }
 
@@ -65,34 +87,30 @@ const CreateBottomModal = ({
       <BottomSheetModal
         ref={bottomSheetModalRef}
         snapPoints={snapPoints}
-        index={1}
-        handleStyle={{
-          borderTopWidth: 1,
-          borderTopColor: 'gainsboro',
-        }}
+        containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+        index={2}
         onChange={handleSheetChanges}>
         <BottomSheetView style={styles.contentContainer}>
-          <View>
-            <View className="flex-row items-center gap-3">
-              <FontAwesome5 name="bible" size={24} color="black" />
-              <Text className="text-lg font-medium">Create Bible study group</Text>
-            </View>
-            <View className="mt-4 gap-3">
-              <TextInput
-                value={groupname}
-                onChangeText={setGroupname}
-                placeholder="Enter group name"
-                className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
-                //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
-              />
-              <TextInput
-                value={groupdescription}
-                onChangeText={setGroupdescription}
-                placeholder="Enter group description"
-                className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
-                //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
-              />
-              {/* <View className="gap-3">
+          <View className="flex-row items-center gap-3">
+            <FontAwesome5 name="bible" size={24} color="black" />
+            <Text className="text-lg font-medium">Create Bible Study</Text>
+          </View>
+          <View className="mt-4 gap-3">
+            <BottomSheetTextInput
+              defaultValue={groupname}
+              onChangeText={setGroupname}
+              placeholder="Enter group name"
+              className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
+              //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
+            />
+            <BottomSheetTextInput
+              defaultValue={groupdescription}
+              onChangeText={setGroupdescription}
+              placeholder="Enter group description"
+              className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
+              //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
+            />
+            {/* <View className="gap-3">
                 <Text className="text-lg font-medium">Frequency</Text>
                 <View className="w-full flex-row gap-3">
                   <Pressable
@@ -124,12 +142,16 @@ const CreateBottomModal = ({
                   </Pressable>
                 </View>
               </View> */}
-              <Pressable
-                onPress={finalizeSetup}
-                className="mt-4 items-center justify-center rounded-3xl bg-light-primary p-4">
+            <Pressable
+              disabled={isFinalizing}
+              onPress={finalizeSetup}
+              className="mt-4 items-center justify-center rounded-3xl bg-light-primary p-4">
+              {isFinalizing ? (
+                <ActivityIndicator />
+              ) : (
                 <Text className="text-base font-semibold">Create</Text>
-              </Pressable>
-            </View>
+              )}
+            </Pressable>
           </View>
         </BottomSheetView>
       </BottomSheetModal>

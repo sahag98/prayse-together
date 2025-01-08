@@ -2,6 +2,7 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -20,9 +21,6 @@ const Plans = () => {
     queryKey: ['series'],
     queryFn: fetchSeries,
   });
-
-  console.log('is fetched: ', isFetched);
-  console.log('loading error: ', isLoadingError);
 
   async function fetchSeries() {
     try {
@@ -43,11 +41,13 @@ const Plans = () => {
 
   return (
     <Container>
-      <View className="flex-1 justify-between gap-3 px-4">
-        <Text className="self-center text-sm font-semibold">Provided by bibletalks.tv</Text>
-        <Text className="mb-5 text-lg font-medium leading-6">
-          Here are a variety of plans you can go through and earn achievements!
+      <View className="flex-1 justify-between gap-3">
+        <Text
+          onPress={() => Linking.openURL('https://bibletalk.tv/')}
+          className="self-center text-sm font-semibold text-cyan-600">
+          Provided by <Text className="">bibletalk.tv</Text>
         </Text>
+        <Text className="mb-1 mt-3 text-2xl font-bold leading-6">Study Plans</Text>
         <FlatList
           data={data}
           numColumns={2}
@@ -63,15 +63,15 @@ const Plans = () => {
           renderItem={({ item }) => (
             <View
               style={{ backgroundColor: `#${item.hex}` }}
-              className={`aspect-square max-h-48 w-1/2 flex-1 justify-between gap-5 rounded-lg border-gray-300 p-3`}>
+              className={`aspect-square max-h-48 w-1/2 flex-1 justify-between gap-5 rounded-lg  p-3`}>
               <View className="gap-3">
                 <Text>Level {item.type_id}</Text>
 
                 <Text className="text-xl font-semibold">{item.title}</Text>
               </View>
               <Pressable
-                onPress={() => router.push(`/plans/next?slug=${item.slug}&title=${item.title}`)}
-                className="w-full items-center justify-center rounded-xl bg-light-background px-4 py-3">
+                onPress={() => router.push(`/plans/${item.slug}?title=${item.title}`)}
+                className="w-full items-center justify-center rounded-lg bg-light-background px-4 py-3">
                 <Text className=" font-bold">View Plan</Text>
               </Pressable>
             </View>
