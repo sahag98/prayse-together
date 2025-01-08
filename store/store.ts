@@ -16,6 +16,7 @@ export interface AppState {
   saveNotes: (data: { id: string; creationDate: string; groupName: string; data: Note[] }) => void;
   removeAll: () => void;
   removePlans: () => void;
+  removeNote: (id:string)=>void;
   addPlan: (data: string) => void;
 }
 
@@ -35,6 +36,11 @@ export const useUserStore = create(
       },
       removeAll: () => {
         set({ notes: [] });
+      },
+      removeNote: (id: string)=>{
+        const currentNotes = get().notes;
+  const updatedNotes = currentNotes.filter(note => note.id !== id);
+  set({ notes: updatedNotes });
       },
       removePlans: () => {
         set({ studiedPlans: [] });

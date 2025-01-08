@@ -14,7 +14,8 @@ import { Container } from '~/components/Container';
 import { supabase } from '~/utils/supabase';
 import { useAuth } from '~/providers/auth-provider';
 import { Redirect, router } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import * as ImagePicker from 'expo-image-picker';
 import Animated, {
   useSharedValue,
@@ -26,20 +27,41 @@ import Feather from '@expo/vector-icons/Feather';
 import CreateGroupModal from '~/modals/create-group';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { AntDesign } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { registerForPushNotificationsAsync } from '~/utils/registerNotification';
 
 export default function Setup() {
   const { currentUser, setCurrentUser } = useAuth();
   const [step, setStep] = useState({ counter: 1, title: 'User Information' });
   const screenWidth = Dimensions.get('window').width;
   const translateX = useSharedValue(0);
-  const progress = useSharedValue(0.33);
+  const progress = useSharedValue(0.5);
   const [profileImg, setProfileImg] = useState('');
-  const [username, setUsername] = useState('sahag');
+  const [username, setUsername] = useState('');
   const [isNew, setIsNew] = useState(true);
   const [studyType, setStudyType] = useState('group');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [img, setImg] = useState<ImagePicker.ImagePickerAsset>();
+  useEffect(() => {
+    console.log('setup here');
+
+    async function getNotificationToken() {
+      if (!currentUser) return;
+      const token = await registerForPushNotificationsAsync();
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          token: token,
+        })
+        .eq('id', currentUser.id);
+
+      console.log('error: ', error);
+    }
+    getNotificationToken();
+  }, []);
 
   async function updateProfile() {
     try {
@@ -94,6 +116,7 @@ export default function Setup() {
 
       if (data) {
         setCurrentUser(data);
+        router.push('/(app)/(tabs)');
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -143,6 +166,7 @@ export default function Setup() {
       }
 
       const image = result.assets[0];
+      setImg(image);
 
       if (!image.uri) {
         throw new Error('No image uri!'); // Realistically, this should never happen, but just in case...
@@ -188,11 +212,7 @@ export default function Setup() {
   const handleNextStep = () => {
     if (step.counter === 1) {
       translateX.value = -screenWidth; // Move to the next step
-      setStep({ counter: 2, title: 'Additional Information' });
-      progress.value = withTiming(0.66, { duration: 400 });
-    } else if (step.counter === 2) {
-      translateX.value = -screenWidth * 2; // Move to the third step
-      setStep({ counter: 3, title: 'Create first study group' });
+      setStep({ counter: 2, title: 'Additional Setup' });
       progress.value = withTiming(1, { duration: 400 });
     }
   };
@@ -201,26 +221,21 @@ export default function Setup() {
     if (step.counter === 2) {
       translateX.value = 0; // Move back to the first step
       setStep({ counter: 1, title: 'User Information' });
-      progress.value = withTiming(0.33, { duration: 400 });
-    }
-    if (step.counter === 3) {
-      translateX.value = -screenWidth; // Move back to the first step
-      setStep({ counter: 2, title: 'Additional Information' });
-      progress.value = withTiming(0.66, { duration: 400 });
+      progress.value = withTiming(0.5, { duration: 400 });
     }
   };
 
   return (
     <>
-      <Container>
+      <SafeAreaView edges={['top']} className="flex-1">
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View className="w-full flex-1 self-center">
             {/* Progress Bar */}
-            <View className="gap-2 px-4">
+            <View className="gap-2 px-6">
               <View className="flex-row items-center gap-1">
-                <Text className="font-medium">{step.counter}/3:</Text>
+                <Text className="font-medium">{step.counter}/2:</Text>
                 <Text className="font-medium">{step.title}</Text>
               </View>
               <View className="h-3 w-full rounded-lg bg-gray-200">
@@ -230,16 +245,16 @@ export default function Setup() {
                 />
               </View>
             </View>
-            <Text className="mt-5 pl-4 text-2xl font-bold">Hey! Let's setup your app 👋</Text>
+            <Text className="mt-5 px-6 text-2xl font-bold">Hey! Let's setup your app 👋</Text>
             <View className="flex-1 justify-center gap-4">
               <Animated.View
-                style={[animatedStyle, { flexDirection: 'row', width: screenWidth * 3 }]}>
+                style={[animatedStyle, { width: screenWidth * 2, flexDirection: 'row' }]}>
                 <View className="gap-5 px-4" style={{ width: screenWidth }}>
                   {step.counter === 1 && (
                     <>
-                      {profileImg ? (
+                      {img ? (
                         <Image
-                          source={{ uri: profileImg }}
+                          source={img}
                           accessibilityLabel="Avatar"
                           className="size-40 self-center rounded-full "
                           //   style={{ width: 40, height: 40 }}
@@ -277,79 +292,9 @@ export default function Setup() {
                     </>
                   )}
                 </View>
+
                 <View className="px-4" style={{ width: screenWidth }}>
                   {step.counter === 2 && (
-                    <View className="gap-3">
-                      <Text className="font-medium">Are you new to the Christian faith?</Text>
-                      <View className="w-full flex-row gap-3">
-                        <Pressable
-                          onPress={() => setIsNew(true)}
-                          className={
-                            isNew === true
-                              ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                              : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                          }>
-                          <Text className="font-semibold">Yes</Text>
-                        </Pressable>
-                        <Pressable
-                          onPress={() => setIsNew(false)}
-                          className={
-                            isNew === false
-                              ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                              : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                          }>
-                          <Text className="font-semibold">No</Text>
-                        </Pressable>
-                      </View>
-                      {/* <TextInput
-                      placeholder="Enter your username"
-                      className="placeholder:text-light-foreground/60 rounded-3xl bg-gray-200 p-4"
-                    /> */}
-                      <Text className="mt-1 font-medium">
-                        Do you prefer group studies or individual studies?
-                      </Text>
-                      <View className="w-full flex-row gap-3">
-                        <Pressable
-                          onPress={() => setStudyType('group')}
-                          className={
-                            studyType === 'group'
-                              ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                              : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                          }>
-                          <Text className="font-semibold">Group</Text>
-                        </Pressable>
-                        <Pressable
-                          onPress={() => setStudyType('individual')}
-                          className={
-                            studyType === 'individual'
-                              ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                              : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
-                          }>
-                          <Text className="font-semibold">Individual</Text>
-                        </Pressable>
-                      </View>
-                      {/* <TextInput
-                      placeholder="Group or Individual"
-                      className="placeholder:text-light-foreground/60 rounded-3xl bg-gray-200 p-4"
-                    /> */}
-                      <View className="mt-5 gap-3">
-                        <Pressable
-                          disabled={!studyType}
-                          className="items-center justify-center rounded-3xl bg-light-primary p-4 transition-all disabled:bg-light-primary/50"
-                          onPress={handleNextStep}>
-                          <Text className="text-base font-semibold">Next</Text>
-                        </Pressable>
-                        <Pressable
-                          className="items-center justify-center rounded-3xl bg-gray-200 p-4"
-                          onPress={handlePreviousStep}>
-                          <Text className="text-base font-semibold">Back</Text>
-                        </Pressable>
-                      </View>
-                    </View>
-                  )}
-                </View>
-                <View className="px-4" style={{ width: screenWidth }}>
-                  {step.counter === 3 && (
                     <>
                       {studyType === 'group' && (
                         <Pressable
@@ -366,6 +311,12 @@ export default function Setup() {
                           <Text className="text-base font-semibold">Back</Text>
                         </Pressable>
                       </View>
+
+                      <Pressable
+                        className="mt-5 items-center justify-center rounded-3xl  p-4"
+                        onPress={updateProfile}>
+                        <Text className="text- font-semibold underline">Skip</Text>
+                      </Pressable>
                     </>
                   )}
                 </View>
@@ -377,7 +328,7 @@ export default function Setup() {
             />
           </View>
         </KeyboardAvoidingView>
-      </Container>
+      </SafeAreaView>
     </>
   );
 }

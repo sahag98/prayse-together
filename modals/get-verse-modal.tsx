@@ -24,7 +24,8 @@ const GetVerseModal = ({
   const [reference, setReference] = useState('');
   const [chapter, setChapter] = useState('');
   const [verse, setVerse] = useState('');
-
+  const [verseEnd, setVerseEnd] = useState('');
+  const [activeTab, setActiveTab] = useState('range');
   const { currentUser } = useAuth();
 
   async function addVerseToStudyNote() {
@@ -45,7 +46,14 @@ const GetVerseModal = ({
     if (!reference || !chapter || !verse) {
       alert('The fields are all required.');
     }
-    const url = `https://bible-api.com/${reference} ${chapter}:${verse}?translation=kjv`;
+
+    let url;
+
+    if (verseEnd) {
+      url = `https://bible-api.com/${reference}+${chapter}:${verse}-${verseEnd}?translation=kjv`;
+    } else {
+      url = `https://bible-api.com/${reference} ${chapter}:${verse}?translation=kjv`;
+    }
 
     try {
       const response = await fetch(url);
@@ -59,6 +67,8 @@ const GetVerseModal = ({
       setReference('');
       setChapter('');
       setVerse('');
+      setVerseEnd('');
+      setActiveTab('range');
       setVisible(false);
       return data;
     } catch (error) {
@@ -77,19 +87,37 @@ const GetVerseModal = ({
             alignItems: 'center',
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
           }}>
-          <View className="w-4/5 items-center gap-4 rounded-xl bg-light-background p-4">
+          <View className="w-11/12 items-center gap-4 rounded-xl bg-light-background p-4">
             <Pressable onPress={() => setVisible(false)} className="absolute right-2 top-2 p-2">
               <AntDesign name="close" size={24} color="black" />
             </Pressable>
-            <Text className="mb-2 text-xl font-semibold">Add Bible Verse</Text>
+            <Text className="mb-2 text-2xl font-semibold">Add Bible Verse</Text>
+
             <TextInput
               autoFocus
-              className="w-full rounded-lg border p-3 font-medium placeholder:text-gray-500"
+              className="w-full rounded-lg border p-4 font-medium placeholder:text-gray-500"
               placeholder="Enter Reference (ex: John)"
               value={reference}
               onChangeText={setReference}
             />
-            <View className="flex-row items-center gap-2">
+            <View className="mb-3 flex-row gap-4 rounded-lg bg-gray-200 p-2">
+              <Pressable
+                onPress={() => setActiveTab('range')}
+                style={{ backgroundColor: activeTab === 'range' ? 'white' : '' }}
+                className="flex-1 items-center justify-center rounded-md bg-light-secondary  p-2">
+                <Text className="font-bold">Range</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setActiveTab('specific');
+                  setVerseEnd('');
+                }}
+                style={{ backgroundColor: activeTab === 'specific' ? 'white' : '' }}
+                className="flex-1 items-center justify-center rounded-md p-2">
+                <Text className="font-bold">Specific</Text>
+              </Pressable>
+            </View>
+            {/* <View className="flex-row items-center gap-2">
               <View className="size-10 items-center justify-center rounded-lg border p-2">
                 <TextInput
                   className="w-full text-center"
@@ -109,7 +137,64 @@ const GetVerseModal = ({
                   keyboardType="numeric"
                 />
               </View>
-            </View>
+            </View> */}
+            {activeTab === 'range' && (
+              <View className="flex-row items-center gap-2">
+                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                  <TextInput
+                    className="w-full text-center"
+                    value={chapter}
+                    onChangeText={setChapter}
+                    numberOfLines={1}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <Text className="text-lg font-bold">:</Text>
+                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                  <TextInput
+                    className="w-full text-center"
+                    value={verse}
+                    numberOfLines={1}
+                    onChangeText={setVerse}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <Text className="text-lg font-bold">-</Text>
+                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                  <TextInput
+                    className="w-full text-center"
+                    value={verseEnd}
+                    numberOfLines={1}
+                    onChangeText={setVerseEnd}
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+            )}
+            {activeTab === 'specific' && (
+              <View className="flex-row items-center gap-2">
+                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                  <TextInput
+                    className="w-full text-center"
+                    value={chapter}
+                    onChangeText={setChapter}
+                    numberOfLines={1}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <Text className="text-lg font-bold">:</Text>
+                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                  <TextInput
+                    className="w-full text-center"
+                    value={verse}
+                    numberOfLines={1}
+                    onChangeText={setVerse}
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+            )}
+
             <Pressable
               onPress={addVerseToStudyNote}
               className="mt-3 w-full items-center rounded-xl bg-light-primary p-3">

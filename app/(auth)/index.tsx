@@ -8,6 +8,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 export default function Login() {
   const { getGoogleOAuthUrl, currentUser, setCurrentUser } = useAuth();
+
   const onSignInWithApple = async () => {
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -31,7 +32,7 @@ export default function Login() {
 
         if (!error) {
           console.log('Signed in!');
-          router.push('/(tabs)/home');
+          // router.push('/(app)/(tabs)');
           //   router.push(COMMUNITY_SCREEN);
         }
       } else {
@@ -54,7 +55,7 @@ export default function Login() {
         return;
       }
 
-      const result = await WebBrowser.openAuthSessionAsync(url, 'exp://192.168.1.44:8081', {
+      const result = await WebBrowser.openAuthSessionAsync(url, 'prayse-together://', {
         showInRecents: true,
       });
 
@@ -80,7 +81,7 @@ export default function Login() {
 
         setCurrentUser(profiles[0]);
 
-        router.push('/(tabs)/home');
+        // router.push('/(app)/(tabs)');
       } else if (result.type === 'cancel') {
         console.log('info', 'Google sign-in was cancelled');
       }
@@ -106,31 +107,31 @@ export default function Login() {
     <>
       {/* <Stack.Screen options={{ title: 'Home' }} /> */}
       <Container>
-        <View className="flex-1 justify-center gap-5 px-4">
+        <View className="flex-1 justify-center gap-5">
           <View className="gap-2">
             <Image
-              source={require('../assets/prayse-together-logo.png')}
+              source={require('../../assets/prayse-together-logo.png')}
               width={600}
               height={600}
-              className="size-72 self-center"
+              className="size-64 self-center"
             />
-            <Text className="text-4xl font-bold">Welcome to App Name</Text>
-            <Text className="">
-              Your guide to exploring the Bible and growing in faith with others.
+            <Text className="text-3xl font-bold">Welcome to Bible Study by Prayse</Text>
+            <Text className="text-lg">
+              Your guide to exploring the Bible and growing in faith alongside others.
             </Text>
           </View>
           <View className="mt-5 gap-3">
             <Pressable
               onPress={onSignInWithGoogle}
-              className="flex-row items-center justify-center gap-2 rounded-lg bg-light-primary p-4">
+              className="flex-row items-center justify-center gap-2 rounded-3xl bg-light-primary p-4">
               <AntDesign name="google" size={24} color="black" />
-              <Text className="font-semibold">Continue with Google</Text>
+              <Text className="text-lg font-semibold">Continue with Google</Text>
             </Pressable>
             <Pressable
               onPress={onSignInWithApple}
-              className="flex-row items-center justify-center gap-2 rounded-lg bg-light-primary p-4">
+              className="flex-row items-center justify-center gap-2 rounded-3xl bg-light-primary p-4">
               <AntDesign name="apple-o" size={24} color="black" />
-              <Text className="font-semibold">Continue with Apple</Text>
+              <Text className="text-lg font-semibold">Continue with Apple</Text>
             </Pressable>
           </View>
         </View>

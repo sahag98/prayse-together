@@ -132,30 +132,36 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          created_at: string
           full_name: string | null
           id: string
           is_new: boolean
           study_setting: string | null
+          token: string | null
           updated_at: string | null
           username: string | null
           website: string | null
         }
         Insert: {
           avatar_url?: string | null
+          created_at?: string
           full_name?: string | null
           id: string
           is_new?: boolean
           study_setting?: string | null
+          token?: string | null
           updated_at?: string | null
           username?: string | null
           website?: string | null
         }
         Update: {
           avatar_url?: string | null
+          created_at?: string
           full_name?: string | null
           id?: string
           is_new?: boolean
           study_setting?: string | null
+          token?: string | null
           updated_at?: string | null
           username?: string | null
           website?: string | null
@@ -168,30 +174,36 @@ export type Database = {
           code: number
           created_at: string
           description: string | null
+          frequency: string | null
           has_started: boolean
           id: number
           name: string
           note_id: number | null
+          study_time: string | null
         }
         Insert: {
           admin_id?: string | null
           code: number
           created_at?: string
           description?: string | null
+          frequency?: string | null
           has_started?: boolean
           id?: number
           name: string
           note_id?: number | null
+          study_time?: string | null
         }
         Update: {
           admin_id?: string | null
           code?: number
           created_at?: string
           description?: string | null
+          frequency?: string | null
           has_started?: boolean
           id?: number
           name?: string
           note_id?: number | null
+          study_time?: string | null
         }
         Relationships: [
           {

@@ -24,6 +24,7 @@ const EndScreen = () => {
   const { currentUser } = useAuth();
   const { saveNotes } = useUserStore();
   const { id } = useLocalSearchParams();
+  const [isSaving, setIsSaving] = useState(false);
   const [groupNotes, setGroupNotes] = useState<Note[] | null>();
   const [currentGroup, setCurrentGroup] = useState<Tables<'study_group'> | null>();
 
@@ -52,7 +53,12 @@ const EndScreen = () => {
   }
 
   async function endStudy() {
-    console.log('ending study');
+    console.log('ending study: ', hasAlreadySaved);
+
+    if (hasAlreadySaved) {
+      router.push('/(app)/(tabs)');
+      return;
+    }
 
     if (groupNotes && groupNotes?.length > 0) {
       Alert.alert(
@@ -68,13 +74,13 @@ const EndScreen = () => {
         ]
       );
     } else {
-      router.push('/(tabs)/home');
+      router.push('/(app)/(tabs)');
     }
   }
 
   async function deleteNotes() {
     const { data, error } = await supabase.from('group_notes').delete().eq('group_id', id);
-    router.push('/(tabs)/home');
+    router.push('/(app)/(tabs)');
   }
 
   async function saveStudyNotes() {
@@ -90,14 +96,14 @@ const EndScreen = () => {
         groupName: group?.name!,
         data: groupNotes,
       };
-      console.log('notewithId:', JSON.stringify(noteWithId, null, 2));
+
       saveNotes(noteWithId);
     }
   }
 
   return (
     <Container>
-      <View className="flex-1 px-4">
+      <View className="flex-1">
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-1">
             <Pressable onPress={endStudy}>
@@ -108,9 +114,9 @@ const EndScreen = () => {
         <View className="flex-1 items-center justify-center gap-1">
           <Entypo name="open-book" size={80} color="black" />
           <Text className="text-xl font-semibold">The study has ended.</Text>
-          {groupNotes?.length! > 0 && (
+          {groupNotes?.length! > 0 && !hasAlreadySaved && (
             <Pressable onPress={saveStudyNotes} className="mt-4 rounded-xl bg-light-primary p-4">
-              <Text className="font-bold">Save study notes</Text>
+              <Text className="text-lg font-bold">Save Study Notes</Text>
             </Pressable>
           )}
 

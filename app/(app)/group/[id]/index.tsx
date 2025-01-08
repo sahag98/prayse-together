@@ -1,9 +1,10 @@
-import { Pressable, Text, View, TextInput, FlatList } from 'react-native';
+import { Pressable, Text, View, TextInput, FlatList, Alert } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { Container } from '~/components/Container';
 import { supabase } from '~/utils/supabase';
 import { Tables } from '~/database.types';
+
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '~/providers/auth-provider';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -189,16 +190,16 @@ const GroupPage = () => {
   if (!currentGroup.has_started) {
     return (
       <Container>
-        <View className="flex-1 px-4">
+        <View className="flex-1">
           <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-1">
+            <View className="flex-row items-center gap-2">
               <Pressable
                 onPress={() => {
-                  router.push('/(tabs)/home');
+                  router.push('/(app)/(tabs)');
                 }}>
                 <AntDesign name="left" size={24} color="black" />
               </Pressable>
-              <Text className="text-2xl font-bold">{currentGroup?.name}</Text>
+              <Text className="text-3xl font-bold">{currentGroup?.name}</Text>
             </View>
           </View>
           <View className="flex-1 items-center justify-center gap-2">
@@ -219,16 +220,16 @@ const GroupPage = () => {
 
   return (
     <Container>
-      <View className="flex-1 px-4">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-1">
+      <View className="flex-1">
+        <View className="flex-row items-center justify-between gap-4">
+          <View className="flex-1 flex-row items-center gap-2">
             <Pressable
               onPress={() => {
-                router.push('/(tabs)/home');
+                router.back();
               }}>
               <AntDesign name="left" size={24} color="black" />
             </Pressable>
-            <Text className="text-2xl font-bold">{currentGroup?.name}</Text>
+            <Text className="text-3xl font-bold">{currentGroup?.name}</Text>
           </View>
           {currentGroup.has_started && currentUser?.id === currentGroup.admin_id && (
             <>
@@ -236,7 +237,20 @@ const GroupPage = () => {
                 <AntDesign name="addusergroup" size={30} color="black" />
               </Pressable>
               <Pressable
-                onPress={endBibleStudy}
+                onPress={() =>
+                  Alert.alert(
+                    'End Bible Study',
+                    'This action will end the current study for everyone.',
+                    [
+                      {
+                        text: 'Cancel',
+                        onPress: () => console.log('Cancel Pressed'),
+                        style: 'cancel',
+                      },
+                      { text: 'End', style: 'destructive', onPress: endBibleStudy },
+                    ]
+                  )
+                }
                 className="rounded-xl border border-red-400 bg-red-100 px-4 py-2">
                 <Text className="text-lg font-bold text-red-500">END</Text>
               </Pressable>
@@ -244,7 +258,8 @@ const GroupPage = () => {
           )}
         </View>
         <FlatList
-          data={groupNotes}
+          data={groupNotes?.toReversed()}
+          inverted
           style={{ marginBottom: 5, flex: 1, marginTop: 15 }}
           contentContainerStyle={{ gap: 15 }}
           showsVerticalScrollIndicator={false}
@@ -252,7 +267,7 @@ const GroupPage = () => {
           renderItem={({ item }) => <NoteItem item={item} />}
         />
         {currentGroup.has_started && (
-          <View className="mb-4 mt-auto flex-row justify-between gap-4 pt-2">
+          <View className="mb-8 mt-auto flex-row justify-between gap-4 pt-2">
             <Pressable
               onPress={() => setShowVerseModal(true)}
               className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-primary bg-light-primary/15 p-3">
