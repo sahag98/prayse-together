@@ -14,17 +14,25 @@ import { useAuth } from '~/providers/auth-provider';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '~/utils/supabase';
 import { Tables } from '~/database.types';
-import { AntDesign, FontAwesome5, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  AntDesign,
+  Entypo,
+  FontAwesome5,
+  Ionicons,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import JoinGroupModal from '~/modals/join-group';
 import { GroupMembers } from '~/types/types';
 import axios from 'axios';
+import GroupSettingsModal from '~/modals/group-settings';
 const StartStudy = () => {
   const { currentUser } = useAuth();
   const { id } = useLocalSearchParams();
   const [currentGroup, setCurrentGroup] = useState<Tables<'study_group'> | null>();
   const [groupMembers, setGroupMembers] = useState<GroupMembers[] | null>();
   const joinModalRef = useRef<BottomSheetModal>(null);
+  const groupSettingsModalRef = useRef<BottomSheetModal>(null);
   useEffect(() => {
     getGroup();
     getGroupMembers();
@@ -75,6 +83,9 @@ const StartStudy = () => {
   const handlePresentJoinModalPress = useCallback(() => {
     joinModalRef.current?.present();
   }, []);
+  const handlePresentGroupSettingsModalPress = useCallback(() => {
+    groupSettingsModalRef.current?.present();
+  }, []);
 
   async function getGroup() {
     const { data: study_group, error } = await supabase
@@ -91,8 +102,8 @@ const StartStudy = () => {
     const { data: group_members, error } = await supabase
       .from('group_members')
       .select('*, profiles(*)')
-      .eq('group_id', id)
-      .neq('user_id', currentUser?.id);
+      .eq('group_id', id);
+    // .neq('user_id', currentUser?.id);
 
     if (group_members) {
       //@ts-expect-error
@@ -156,6 +167,8 @@ const StartStudy = () => {
     return;
   }
 
+  if (!groupMembers) return;
+
   return (
     <Container>
       <View className="flex-1">
@@ -169,10 +182,8 @@ const StartStudy = () => {
             </Pressable>
             <Text className="text-3xl font-bold">{currentGroup?.name}</Text>
           </View>
-          <Pressable
-            onPress={handlePresentJoinModalPress}
-            className="flex-row items-center gap-2 rounded-xl bg-light-secondary p-3">
-            <AntDesign name="addusergroup" size={30} color="black" />
+          <Pressable onPress={handlePresentGroupSettingsModalPress} className="">
+            <Entypo name="dots-three-vertical" size={24} color="black" />
           </Pressable>
         </View>
         {/* SAVING THIS FEATURE FOR THE FIRST UPDATE */}
@@ -225,9 +236,16 @@ const StartStudy = () => {
 
         <View className="flex-1 items-center justify-center gap-3">
           <View className="mt-5 max-h-52 w-full gap-4 rounded-2xl border border-light-secondary p-3">
-            <View className="flex-row items-center gap-2">
-              <Text className="text-xl font-semibold">Members </Text>
-              <FontAwesome5 name="user" size={20} color="black" />
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                <Text className="text-xl font-semibold">Members </Text>
+                <FontAwesome5 name="user" size={20} color="black" />
+              </View>
+              <Pressable
+                onPress={handlePresentJoinModalPress}
+                className="flex-row items-center gap-2 rounded-xl bg-light-secondary p-3">
+                <Entypo name="plus" size={24} color="black" />
+              </Pressable>
             </View>
             <FlatList
               data={groupMembers}
@@ -239,7 +257,7 @@ const StartStudy = () => {
                 </View>
               )}
               renderItem={({ item }) => (
-                <View className="w-full flex-row items-center gap-2 ">
+                <View className="flex-1 flex-row items-center  gap-2 ">
                   <View className=" flex-row items-center gap-2">
                     {item.profiles?.avatar_url ? (
                       <Image
@@ -277,6 +295,13 @@ const StartStudy = () => {
         </View>
       </View>
       <JoinGroupModal code={currentGroup?.code!} bottomSheetModalRef={joinModalRef} />
+      <GroupSettingsModal
+        group_id={currentGroup?.id}
+        created={currentGroup?.created_at!}
+        admin={groupMembers[0]}
+        code={currentGroup?.code!}
+        bottomSheetModalRef={groupSettingsModalRef}
+      />
     </Container>
   );
 };

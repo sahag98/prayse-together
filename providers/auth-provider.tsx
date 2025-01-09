@@ -88,7 +88,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       const user = session?.user;
       if (user) {
         getUser(user);
-        // getUserGroups();
+        getUserGroups();
       } else {
         setIsReady(true);
       }
@@ -131,6 +131,17 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         (payload) => {
           console.log('NEW MEMBER payload: ', payload.new);
           // queryClient.invalidateQueries({ queryKey: ['groups'] });
+          const newMember = payload.new;
+          // getGroupMembers(newMember.group_id);
+          // getUserGroups();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'study_group' },
+        (payload) => {
+          console.log('DELETING GROUP');
+          queryClient.invalidateQueries({ queryKey: ['groups'] });
           const newMember = payload.new;
           // getGroupMembers(newMember.group_id);
           // getUserGroups();

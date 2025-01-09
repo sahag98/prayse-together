@@ -102,26 +102,27 @@ const ProfilePage = () => {
               </View>
             </View> */}
         </View>
-        <View className="items-center justify-center gap-2 rounded-2xl bg-light-secondary/50 p-4">
+        <View className="items-center justify-center gap-2 rounded-2xl bg-gray-200 p-4">
           <Text className="text-xl font-bold">Bible Study By Prayse</Text>
           <Text className="">v.1.0.0</Text>
         </View>
-        <View className="items-center justify-center gap-2 rounded-2xl bg-gray-200 p-4">
+        <View className="justify-center gap-1 rounded-2xl bg-gray-200 p-4">
+          <Text className="text-center">App Theme Verse</Text>
           <Text className="text-lg font-semibold">2 Timothy 2:15</Text>
           <Text>
             Be diligent to present yourself approved to God, a worker who does not need to be
             ashamed, rightly dividing the word of truth.
           </Text>
         </View>
-        <View className="mt-5 gap-3">
+        <View className="mb-10 mt-auto gap-3">
           <Pressable
             onPress={() => {
               supabase.auth.signOut();
               setCurrentUser(null);
               // router.push('/(auth)');
             }}
-            className="  w-full items-center justify-center rounded-xl bg-light-accent p-4">
-            <Text className="text-base font-semibold text-white">Sign out</Text>
+            className="w-full items-center justify-center rounded-xl bg-red-100 p-4">
+            <Text className="text-base font-semibold text-red-600">Sign out</Text>
           </Pressable>
           <Pressable
             onPress={() =>
@@ -134,7 +135,7 @@ const ProfilePage = () => {
                 { text: 'Delete', style: 'destructive', onPress: deleteAccount },
               ])
             }
-            className=" w-full items-center justify-center rounded-xl bg-gray-400 p-4">
+            className=" w-full items-center justify-center rounded-xl bg-gray-600 p-4">
             <Text className="text-base font-semibold text-white">Delete account</Text>
           </Pressable>
         </View>

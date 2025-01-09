@@ -81,6 +81,13 @@ const CreateGroupBottomModal = ({
 
       if (!data) return;
 
+      bottomSheetModalRef.current?.close();
+      setGroupname('');
+      setGroupdescription('');
+      queryClient.invalidateQueries({
+        queryKey: ['groups'],
+      });
+
       const { data: insertMemberData, error: insertMemberError } = await supabase
         .from('group_members')
         .insert([
@@ -91,12 +98,6 @@ const CreateGroupBottomModal = ({
           },
         ])
         .select();
-      bottomSheetModalRef.current?.close();
-      setGroupname('');
-      setGroupdescription('');
-      queryClient.invalidateQueries({
-        queryKey: ['groups'],
-      });
     } catch (error) {
       console.log(error);
     }

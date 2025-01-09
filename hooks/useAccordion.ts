@@ -3,7 +3,7 @@ import {
   useAnimatedRef,
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
+  withSpring,
 } from 'react-native-reanimated';
 
 export const useAccordion = () => {
@@ -12,13 +12,23 @@ export const useAccordion = () => {
   const height = useSharedValue(0);
 
   const animateHeightStyle = useAnimatedStyle(() => ({
-    height: withTiming(height.value),
+    height: withSpring(height.value, {
+      damping: 15,
+      stiffness: 120,
+      mass: 0.8,
+    }),
+    opacity: withSpring(height.value > 0 ? 1 : 0),
   }));
 
   const setHeight = () => {
     'worklet';
-
-    height.value = !height.value ? Number(measure(animateRef)?.height ?? 0) : 0;
+    
+    if (height.value === 0) {
+      const measuredHeight = Number(measure(animateRef)?.height ?? 0);
+      height.value = measuredHeight;
+    } else {
+      height.value = 0;
+    }
     isOpened.value = !isOpened.value;
   };
 
