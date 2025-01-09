@@ -48,6 +48,8 @@ const SavesScreen = () => {
           )}
         </View>
         <View className="mt-5 flex-1">
+          {/* <Button onPress={onPress} title="Click me" /> */}
+
           <FlatList
             data={notes.toReversed()}
             contentContainerStyle={{ flexGrow: 1, gap: 10 }}
@@ -69,4 +71,23 @@ const SavesScreen = () => {
 
 export default SavesScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  wrapper: {
+    width: '100%',
+    position: 'absolute',
+    display: 'flex',
+  },
+  animatedView: {
+    width: '100%',
+    overflow: 'hidden',
+  },
+  box: {
+    height: 120,
+    width: 120,
+    color: '#f8f9ff',
+    backgroundColor: '#b58df1',
+    borderRadius: 20,
+    // alignItems: 'center',
+    // justifyContent: 'center',
+  },
+});

@@ -57,6 +57,7 @@ const EndScreen = () => {
 
     if (hasAlreadySaved) {
       router.push('/(app)/(tabs)');
+      deleteNotes();
       return;
     }
 
@@ -114,7 +115,7 @@ const EndScreen = () => {
         <View className="flex-1 items-center justify-center gap-1">
           <Entypo name="open-book" size={80} color="black" />
           <Text className="text-xl font-semibold">The study has ended.</Text>
-          {groupNotes?.length! > 0 && !hasAlreadySaved && (
+          {groupNotes && groupNotes?.length > 0 && !hasAlreadySaved && (
             <Pressable onPress={saveStudyNotes} className="mt-4 rounded-xl bg-light-primary p-4">
               <Text className="text-lg font-bold">Save Study Notes</Text>
             </Pressable>

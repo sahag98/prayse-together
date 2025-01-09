@@ -1,6 +1,6 @@
-import { Pressable, Text, View, TextInput, FlatList, Alert } from 'react-native';
+import { Pressable, Text, View, TextInput, FlatList, Alert, Image, Animated } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Container } from '~/components/Container';
 import { supabase } from '~/utils/supabase';
 import { Tables } from '~/database.types';
@@ -11,7 +11,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import JoinGroupModal from '~/modals/join-group';
 
 import GetVerseModal from '~/modals/get-verse-modal';
-import { Note } from '~/types/types';
+import { Note, Profile } from '~/types/types';
 import NoteItem from '~/components/NoteItem';
 import InsertTextModlal from '~/modals/insert-text-modal';
 
@@ -21,11 +21,14 @@ const GroupPage = () => {
   const joinModalRef = useRef<BottomSheetModal>(null);
   const [showVerseModal, setShowVerseModal] = useState(false);
   const [showTextModal, setShowTextModal] = useState(false);
-
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const { currentUser } = useAuth();
-
+  const [channel, setChannel] = useState();
   const [currentGroup, setCurrentGroup] = useState<Tables<'study_group'> | null>();
   const [groupNotes, setGroupNotes] = useState<Note[] | null>();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
   // callbacks
   const handlePresentJoinModalPress = useCallback(() => {
     joinModalRef.current?.present();
@@ -114,6 +117,90 @@ const GroupPage = () => {
   // // Call the function
   // getBibleVerse();
 
+  useFocusEffect(
+    // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
+    useCallback(() => {
+      // Invoked whenever the route is focused.
+
+      if (id && currentUser?.id) {
+        // dispatch(clearMessages());
+
+        //  getGroupMessages();
+
+        /**
+         * Step 1:
+         *
+         * Create the supabase channel for the roomCode, configured
+         * so the channel receives its own messages
+         */
+        const channel = supabase.channel(`room:${id}`, {
+          config: {
+            broadcast: {
+              self: true,
+            },
+            presence: {
+              key: currentUser?.id,
+            },
+          },
+        });
+
+        /**
+         * Step 2:
+         *
+         * Listen to broadcast messages with a `message` event
+         */
+        //  channel.on('broadcast', { event: 'message' }, ({ payload }) => {
+        //    setGroupMessages((messages) => [payload, ...messages]);
+        //  });
+
+        channel.on('presence', { event: 'sync' }, () => {
+          /** Get the presence state from the channel, keyed by realtime identifier */
+          const presenceState = channel.presenceState();
+
+          /** transform the presence */
+          const users = Object.keys(presenceState)
+            .map((presenceId) => {
+              const presences = presenceState[presenceId];
+              return presences.map((presence) => presence.currentUser);
+            })
+            .flat();
+
+          setOnlineUsers(users);
+        });
+
+        /**
+         * Step 3:
+         *
+         * Subscribe to the channel
+         */
+        channel.subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            channel.track({ currentUser });
+          }
+        });
+
+        /**
+         * Step 4:
+         *
+         * Set the channel in the state
+         */
+        setChannel(channel);
+
+        /**
+         * * Step 5:
+         *
+         * Return a clean-up function that unsubscribes from the channel
+         * and clears the channel state
+         */
+        return () => {
+          channel.unsubscribe();
+          setChannel(undefined);
+        };
+      }
+      // Return function is invoked whenever the route gets out of focus.
+    }, [id, currentUser?.id])
+  );
+
   useEffect(() => {
     getGroup();
     getGroupNote();
@@ -180,6 +267,26 @@ const GroupPage = () => {
       supabase.removeChannel(channel); // Clean up the subscription
     };
   }, [id]);
+
+  useEffect(() => {
+    // Fade in
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+
+    // After 4 seconds, fade out
+    const timer = setTimeout(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!currentGroup) return;
 
@@ -257,31 +364,100 @@ const GroupPage = () => {
             </>
           )}
         </View>
-        <FlatList
-          data={groupNotes?.toReversed()}
-          inverted
-          style={{ marginBottom: 5, flex: 1, marginTop: 15 }}
-          contentContainerStyle={{ gap: 15 }}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={(item) => item?.id?.toString()}
-          renderItem={({ item }) => <NoteItem item={item} />}
-        />
-        {currentGroup.has_started && (
-          <View className="mb-8 mt-auto flex-row justify-between gap-4 pt-2">
-            <Pressable
-              onPress={() => setShowVerseModal(true)}
-              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-primary bg-light-primary/15 p-3">
-              <Text className="text-lg font-medium">Bible Verse</Text>
-              <AntDesign name="plus" size={15} color="black" />
-            </Pressable>
-            <Pressable
-              onPress={() => setShowTextModal(true)}
-              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-secondary bg-light-secondary/15 p-3">
-              <Text className="text-lg font-medium">Text</Text>
-              <AntDesign name="plus" size={15} color="black" />
-            </Pressable>
-          </View>
-        )}
+        <View className="flex-1">
+          <Pressable
+            onPress={() => setShowDropdown((prev) => !prev)}
+            className="absolute top-5 z-10 w-full">
+            <View className="flex-row items-center justify-between rounded-xl bg-gray-200 p-3">
+              <Text className="font-medium">
+                {onlineUsers.length} {onlineUsers.length === 1 ? 'person' : 'people'} in study
+              </Text>
+              <AntDesign name={showDropdown ? 'up' : 'down'} size={20} color="black" />
+            </View>
+
+            {showDropdown && (
+              <View className="mt-2 rounded-xl bg-gray-200 p-2">
+                {onlineUsers.map((user: Profile) => (
+                  <View className="flex-row items-center gap-3 p-2" key={user.id}>
+                    {user?.avatar_url ? (
+                      <Image
+                        style={{ width: 30, aspectRatio: 1 / 1 }}
+                        className="rounded-full"
+                        source={{ uri: user.avatar_url }}
+                      />
+                    ) : (
+                      <View className="size-9 items-center justify-center rounded-full bg-gray-300">
+                        <Text className="text-base font-medium uppercase">
+                          {user.username.charAt(0)}
+                          {user.username.charAt(1)}
+                        </Text>
+                      </View>
+                    )}
+                    <Text className="text-sm">{user.username}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </Pressable>
+
+          <Animated.View
+            style={{
+              opacity: fadeAnim,
+              position: 'absolute',
+              top: 20,
+              width: '100%',
+              zIndex: 20,
+              display: showDropdown ? 'none' : 'flex',
+            }}>
+            {onlineUsers.map((user: Profile) => (
+              <View
+                className="mb-2 flex-row items-center gap-3 rounded-xl bg-gray-200 p-2"
+                key={user.id}>
+                {user?.avatar_url ? (
+                  <Image
+                    style={{ width: 30, aspectRatio: 1 / 1 }}
+                    className="rounded-full"
+                    source={{ uri: user.avatar_url }}
+                  />
+                ) : (
+                  <View className="size-9 items-center justify-center rounded-full bg-gray-300">
+                    <Text className="text-base font-medium uppercase">
+                      {user.username.charAt(0)}
+                      {user.username.charAt(1)}
+                    </Text>
+                  </View>
+                )}
+                <Text className="text-sm">{user.username} is in the study.</Text>
+              </View>
+            ))}
+          </Animated.View>
+
+          <FlatList
+            data={groupNotes?.toReversed()}
+            inverted
+            style={{ marginBottom: 5, flex: 1, marginTop: 15 }}
+            contentContainerStyle={{ gap: 15 }}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={(item) => item?.id?.toString()}
+            renderItem={({ item }) => <NoteItem item={item} />}
+          />
+          {currentGroup.has_started && (
+            <View className="mb-8 mt-auto flex-row justify-between gap-4 pt-2">
+              <Pressable
+                onPress={() => setShowVerseModal(true)}
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-primary bg-light-primary/15 p-3">
+                <Text className="text-lg font-medium">Bible Verse</Text>
+                <AntDesign name="plus" size={15} color="black" />
+              </Pressable>
+              <Pressable
+                onPress={() => setShowTextModal(true)}
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-secondary bg-light-secondary/15 p-3">
+                <Text className="text-lg font-medium">Text</Text>
+                <AntDesign name="plus" size={15} color="black" />
+              </Pressable>
+            </View>
+          )}
+        </View>
       </View>
 
       <JoinGroupModal code={currentGroup?.code} bottomSheetModalRef={joinModalRef} />

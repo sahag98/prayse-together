@@ -105,8 +105,6 @@ const StartStudy = () => {
       .eq('group_id', id);
     // .neq('user_id', currentUser?.id);
 
-    console.log('members: ', group_members);
-
     if (group_members) {
       //@ts-expect-error
       setGroupMembers(group_members);
