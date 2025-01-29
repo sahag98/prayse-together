@@ -115,21 +115,23 @@ export default function Login() {
               height={600}
               className="size-64 self-center"
             />
-            <Text className="text-3xl font-bold">Welcome to Bible Study by Prayse</Text>
-            <Text className="text-lg">
+            <Text className="text-3xl font-bold text-foreground">
+              Welcome to Bible Study by Prayse
+            </Text>
+            <Text className="text-lg text-foreground">
               Your guide to exploring the Bible and growing in faith alongside others.
             </Text>
           </View>
           <View className="mt-5 gap-3">
             <Pressable
               onPress={onSignInWithGoogle}
-              className="flex-row items-center justify-center gap-2 rounded-3xl bg-light-primary p-4">
+              className="flex-row items-center justify-center gap-2 rounded-3xl bg-primary p-4">
               <AntDesign name="google" size={24} color="black" />
               <Text className="text-lg font-semibold">Continue with Google</Text>
             </Pressable>
             <Pressable
               onPress={onSignInWithApple}
-              className="flex-row items-center justify-center gap-2 rounded-3xl bg-light-primary p-4">
+              className="flex-row items-center justify-center gap-2 rounded-3xl bg-primary p-4">
               <AntDesign name="apple-o" size={24} color="black" />
               <Text className="text-lg font-semibold">Continue with Apple</Text>
             </Pressable>

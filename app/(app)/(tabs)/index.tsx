@@ -23,11 +23,11 @@ import CreateGroupBottomModal from '~/modals/create';
 import { useUserStore } from '~/store/store';
 import { useQuery } from '@tanstack/react-query';
 export default function Home() {
-  const { currentUser, getUserGroups, userGroups } = useAuth();
+  const { currentUser, getUserGroups } = useAuth();
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  const { removeAll, removePlans, studiedPlans } = useUserStore();
+  const { notes } = useUserStore();
 
-  const { data, isFetched, isLoadingError, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['groups'],
     queryFn: getUserGroups,
   });
@@ -35,18 +35,6 @@ export default function Home() {
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
-
-  // useEffect(() => {
-  //   getUserGroups();
-  // }, []);
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator />
-      </View>
-    );
-  }
 
   return (
     <>
@@ -56,14 +44,14 @@ export default function Home() {
         <View className="mb-6 flex-row items-center justify-between gap-5">
           <Pressable
             onPress={() => Linking.openURL('https://prayse.canny.io/testing-feedback/create')}
-            className="ml-auto mr-1 flex-row items-center justify-center gap-2 rounded-full border border-light-accent p-2  ">
-            <Text className="font-semibold text-light-accent">Feedback</Text>
-            <AntDesign className="" name="message1" size={25} color="#FF6F61" />
+            className="ml-auto mr-1 flex-row items-center justify-center gap-2 rounded-full border border-secondary p-2  ">
+            <Text className="font-semibold text-foreground">Feedback</Text>
+            <AntDesign className="text-foreground" name="message1" size={25} color="#87ceeb" />
           </Pressable>
 
           <Pressable
             onPress={() => router.push('/profile')}
-            className="size-14 items-center justify-center rounded-full bg-light-secondary">
+            className="bg-light-secondary size-14 items-center justify-center rounded-full">
             {currentUser?.avatar_url ? (
               <Image
                 className="rounded-full"
@@ -81,15 +69,19 @@ export default function Home() {
           </Pressable>
         </View>
 
-        <Text className="mb-1 text-4xl font-bold">Hello {currentUser?.username} 👋</Text>
-        <Text className="mb-1 mt-3 text-2xl font-semibold">Bible Studies</Text>
+        <Text className="mb-1 text-4xl font-bold text-foreground">
+          Hello {currentUser?.username} 👋
+        </Text>
+        <Text className="mb-1 mt-3 text-2xl font-semibold text-foreground">Bible Studies</Text>
         {/* Group List */}
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           style={{ marginTop: 5 }}
           contentContainerStyle={{ flexGrow: 1, gap: 15 }}
           showsVerticalScrollIndicator={false}
           columnWrapperStyle={{ gap: 15 }}
           data={data!}
+          ListFooterComponent={() => <View className="h-32" />}
           numColumns={2}
           keyExtractor={(item) => item.id.toString()}
           ListEmptyComponent={() => (
@@ -100,24 +92,26 @@ export default function Home() {
                 height={600}
                 className="size-48 self-center"
               />
-              <Text className="font-medium">No groups created yet</Text>
+              <Text className="font-medium text-foreground">No groups created yet</Text>
             </View>
           )}
           renderItem={({ item }) => <GroupItem item={item} />}
         />
 
         {/* Footer */}
-        <View className="mt-auto flex-row items-center justify-between">
+        <View className="absolute bottom-16 left-4 flex-row items-center justify-between pb-16">
           <Pressable
             onPress={handlePresentModalPress}
-            className="size-20 items-center justify-center self-center rounded-full bg-light-primary">
+            className="size-20 items-center justify-center self-center rounded-full bg-primary">
             <Entypo name="plus" size={30} color="black" />
           </Pressable>
-          <Pressable
-            onPress={() => router.push('/saved')}
-            className="items-center justify-center self-center rounded-3xl bg-light-secondary p-4">
-            <Text className="text-lg font-bold">Saved Notes</Text>
-          </Pressable>
+          {notes.length > 0 && (
+            <Pressable
+              onPress={() => router.push('/saved')}
+              className="items-center justify-center self-center rounded-3xl bg-secondary p-4">
+              <Text className="text-lg font-bold">Saved Notes</Text>
+            </Pressable>
+          )}
         </View>
 
         <CreateGroupBottomModal

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Button, Pressable } from 'react-native';
 import {
   BottomSheetModal,
@@ -14,6 +14,8 @@ import { Tables } from '~/database.types';
 import { useAuth } from '~/providers/auth-provider';
 import { useQueryClient } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
+import { emojies } from '~/constants/Emojis';
+import { useTheme } from '~/providers/theme-provider';
 
 const InputComponent = ({ value, setValue }: { value: string; setValue: any }) => {
   const [title, setTitle] = useState('');
@@ -24,7 +26,7 @@ const InputComponent = ({ value, setValue }: { value: string; setValue: any }) =
       }}
       placeholder="Title"
       value={value}
-      className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
+      className="placeholder:text-light-foreground/60 rounded-3xl bg-gray-200 p-4"
       onChangeText={setValue}
     />
   );
@@ -37,8 +39,11 @@ const CreateGroupBottomModal = ({
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
   currentUser: Tables<'profiles'> | null;
 }) => {
+  const { colorScheme } = useTheme();
+
   const [groupname, setGroupname] = useState('');
   const [groupdescription, setGroupdescription] = useState('');
+  const [selectedEmoji, setSelectedEmoji] = useState('');
   const [groupFrequency, setGroupFrequency] = useState('');
   const [groupCode, setGroupCode] = useState<any | null>();
   const [activeTab, setActiveTab] = useState('create');
@@ -55,6 +60,14 @@ const CreateGroupBottomModal = ({
     console.log('handleSheetChanges', index);
   }, []);
 
+  useEffect(() => {
+    setSelectedEmoji(emojies[Math.floor(Math.random() * emojies.length)]);
+
+    return () => {
+      setSelectedEmoji('');
+    };
+  }, []);
+
   async function finalizeSetup() {
     if (!groupname) {
       console.log('no name');
@@ -68,8 +81,9 @@ const CreateGroupBottomModal = ({
         .from('study_group')
         .insert([
           {
-            name: groupname,
+            name: `${groupname} ${selectedEmoji}`,
             code: randomCode,
+            description: groupdescription,
             // study_time: date.toISOString(),
             // frequency: groupFrequency,
             admin_id: currentUser?.id,
@@ -159,6 +173,7 @@ const CreateGroupBottomModal = ({
       setActiveTab('create');
     }
   }
+  console.log(activeTab);
 
   // renders
   return (
@@ -166,37 +181,63 @@ const CreateGroupBottomModal = ({
       <BottomSheetModal
         ref={bottomSheetModalRef}
         containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+        handleIndicatorStyle={{ backgroundColor: colorScheme === 'dark' ? '#787878' : 'black' }}
+        handleStyle={{
+          backgroundColor: colorScheme === 'dark' ? '#212121' : 'white',
+          borderTopEndRadius: 15,
+          borderTopLeftRadius: 15,
+        }}
         snapPoints={snapPoints}
         index={2}
         onChange={handleSheetChanges}>
-        <BottomSheetView style={styles.contentContainer}>
-          <View className="mb-3 flex-row gap-4 rounded-lg bg-gray-200 p-2">
+        <BottomSheetView className="bg-card" style={styles.contentContainer}>
+          <View className="mb-3 flex-row gap-4 rounded-lg border border-cardborder bg-card p-2">
             <Pressable
               onPress={() => setActiveTab('create')}
-              style={{ backgroundColor: activeTab === 'create' ? 'white' : '' }}
-              className="flex-1 items-center justify-center rounded-md bg-light-secondary  p-2">
-              <Text className="font-bold">CREATE</Text>
+              style={{ backgroundColor: activeTab === 'create' ? '#87ceeb' : '' }}
+              className="flex-1 items-center justify-center rounded-md bg-secondary  p-3">
+              <Text
+                style={{ color: activeTab === 'create' ? 'black' : 'white' }}
+                className="font-bold">
+                CREATE
+              </Text>
             </Pressable>
+            <View className="h-full w-0.5 bg-background dark:bg-input" />
             <Pressable
               onPress={() => setActiveTab('join')}
-              style={{ backgroundColor: activeTab === 'join' ? 'white' : '' }}
-              className="flex-1 items-center justify-center rounded-md p-2">
-              <Text className="font-bold">JOIN</Text>
+              style={{ backgroundColor: activeTab === 'join' ? '#87ceeb' : '' }}
+              className="flex-1 items-center  justify-center rounded-md p-2">
+              <Text
+                style={{ color: activeTab === 'join' ? 'black' : 'white' }}
+                className="font-bold text-foreground">
+                JOIN
+              </Text>
             </Pressable>
           </View>
           {activeTab === 'create' ? (
             <View>
-              <View className="flex-row items-center gap-3">
-                <FontAwesome5 name="bible" size={24} color="black" />
-                <Text className="text-xl font-medium">Create Bible study group</Text>
-              </View>
-              <View className="mt-4 gap-4">
+              <View className="gap-4">
                 {/* <InputComponent value={groupname} setValue={setGroupname} /> */}
+                <View className="flex-row items-center justify-between gap-5">
+                  <BottomSheetTextInput
+                    defaultValue={groupname}
+                    onChangeText={setGroupname}
+                    selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
+                    placeholder="What's the title of this study?"
+                    className="flex-1 rounded-xl bg-input p-4 text-foreground placeholder:text-input_placeholder"
+                    //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
+                  />
+
+                  <Pressable className="size-12 items-center justify-center rounded-full bg-input">
+                    <Text>{selectedEmoji}</Text>
+                  </Pressable>
+                </View>
                 <BottomSheetTextInput
-                  defaultValue={groupname}
-                  onChangeText={setGroupname}
-                  placeholder="Enter group name"
-                  className="rounded-xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
+                  defaultValue={groupdescription}
+                  onChangeText={setGroupdescription}
+                  selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
+                  placeholder="What's the description of this study?"
+                  className="rounded-xl bg-input p-4 text-foreground placeholder:text-input_placeholder"
                   //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
                 />
 
@@ -209,7 +250,7 @@ const CreateGroupBottomModal = ({
                       className={
                         groupFrequency === 'daily'
                           ? 'flex-1 items-center justify-center rounded-xl bg-light-secondary p-6'
-                          : 'flex-1 items-center justify-center rounded-xl bg-gray-200 p-6'
+                          : 'flex-1 items-center justify-center rounded-xl bg-input p-6'
                       }>
                       <Text className="font-semibold">Daily</Text>
                     </Pressable>
@@ -265,8 +306,8 @@ const CreateGroupBottomModal = ({
                   onPress={finalizeSetup}
                   className={
                     !groupname
-                      ? 'mt-1 items-center justify-center rounded-3xl bg-light-primary p-4 opacity-40'
-                      : 'mt-1 items-center justify-center rounded-3xl bg-light-primary p-4'
+                      ? 'mt-1 items-center justify-center rounded-3xl bg-primary p-4 opacity-40'
+                      : 'mt-1 items-center justify-center rounded-3xl bg-primary p-4'
                   }>
                   <Text className="text-lg font-bold">CREATE</Text>
                 </Pressable>
@@ -274,17 +315,13 @@ const CreateGroupBottomModal = ({
             </View>
           ) : (
             <View>
-              <View className="flex-row items-center gap-3">
-                <FontAwesome5 name="bible" size={24} color="black" />
-                <Text className="text-lg font-medium">Join Bible study group</Text>
-              </View>
-              <View className="mt-4 gap-3">
+              <View className="gap-3">
                 <BottomSheetTextInput
                   defaultValue={groupCode}
                   onChangeText={setGroupCode}
                   placeholder="Enter group code"
                   keyboardType="numeric"
-                  className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
+                  className="rounded-3xl bg-input p-4 placeholder:text-input_placeholder"
                   //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
                 />
 
@@ -293,8 +330,8 @@ const CreateGroupBottomModal = ({
                   onPress={joinBibleStudy}
                   className={
                     !groupCode
-                      ? 'mt-1 items-center justify-center rounded-3xl bg-light-primary p-4 opacity-40'
-                      : 'mt-1 items-center justify-center rounded-3xl bg-light-primary p-4'
+                      ? 'mt-1 items-center justify-center rounded-3xl bg-primary p-4 opacity-40'
+                      : 'mt-1 items-center justify-center rounded-3xl bg-primary p-4'
                   }>
                   <Text className="text-lg font-bold">JOIN</Text>
                 </Pressable>

@@ -127,10 +127,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       .channel('groups-all-channel')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'group_members' },
+        { event: '*', schema: 'public', table: 'group_members' },
         (payload) => {
           console.log('NEW MEMBER payload: ', payload.new);
-          // queryClient.invalidateQueries({ queryKey: ['groups'] });
+          queryClient.invalidateQueries({ queryKey: ['groups'] });
           const newMember = payload.new;
           // getGroupMembers(newMember.group_id);
           // getUserGroups();

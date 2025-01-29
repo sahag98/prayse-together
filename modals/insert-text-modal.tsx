@@ -11,12 +11,15 @@ import React, { useState } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { supabase } from '~/utils/supabase';
 import { useAuth } from '~/providers/auth-provider';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
-const InsertTextModlal = ({
+const InsertTextModal = ({
+  channel,
   groupId,
   visible,
   setVisible,
 }: {
+  channel: RealtimeChannel | undefined;
   groupId: string | string[];
   visible: boolean;
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -35,7 +38,27 @@ const InsertTextModlal = ({
       .from('group_notes')
       .insert({ group_id: Number(groupId), note, user_id: currentUser?.id })
       .select();
+
+    if (noteData && currentUser) {
+      channel?.send({
+        type: 'broadcast',
+        event: 'message',
+        payload: {
+          id: noteData[0].id,
+          note: note,
+          created_at: noteData[0].created_at,
+          reference: null,
+          group_id: Number(groupId),
+          user_id: currentUser.id,
+          profiles: {
+            username: currentUser.username,
+            avatar_url: currentUser.avatar_url,
+          },
+        },
+      });
+    }
     setNote('');
+
     setVisible(false);
   }
 
@@ -78,4 +101,4 @@ const InsertTextModlal = ({
   );
 };
 
-export default InsertTextModlal;
+export default InsertTextModal;
