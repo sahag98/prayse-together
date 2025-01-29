@@ -1,8 +1,11 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import React from 'react';
 import { Feather } from '@expo/vector-icons';
 import { Note } from '~/types/types';
 import { formatDistance, subDays } from 'date-fns';
+import { Image } from 'expo-image';
+
+const blurhash = 'L1QvwR-;fQ-;~qfQfQfQfQfQfQfQ';
 const NoteItem = ({ item }: { item: Note }) => {
   return (
     <View
@@ -38,16 +41,28 @@ const NoteItem = ({ item }: { item: Note }) => {
         </View>
       </View>
       <View className="w-full gap-2">
-        {!item.reference && (
-          <View className="flex-1 flex-row items-center justify-between">
-            <Text className="text-lg font-medium">{item.profiles.username}</Text>
-            <Text className="text-xs">
-              {formatDistance(new Date(item.created_at), new Date(), { addSuffix: true })}
-            </Text>
+        {!item.reference ? (
+          <View className="flex-1 flex-row items-start justify-between gap-3">
+            <Image
+              source={{ uri: item.profiles.avatar_url }}
+              style={{ width: 35, height: 35, borderRadius: 100 }}
+              placeholder={{ blurhash }}
+              contentFit="cover"
+              transition={1000}
+            />
+            <View className="flex-1 gap-1">
+              <View className="w-full flex-row items-center justify-between">
+                <Text className="text-lg font-medium">{item.profiles.username}</Text>
+                <Text className="text-xs">
+                  {formatDistance(new Date(item.created_at), new Date(), { addSuffix: true })}
+                </Text>
+              </View>
+              <Text className="flex-1">{item.note}</Text>
+            </View>
           </View>
+        ) : (
+          <Text className="flex-1">{item.note}</Text>
         )}
-
-        <Text className="flex-1">{item.note}</Text>
       </View>
     </View>
   );

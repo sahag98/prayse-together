@@ -5,30 +5,37 @@ import { Container } from '~/components/Container';
 import { supabase } from '~/utils/supabase';
 import { Tables } from '~/database.types';
 
-import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '~/providers/auth-provider';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import JoinGroupModal from '~/modals/join-group';
 
 import GetVerseModal from '~/modals/get-verse-modal';
-import { Note, Profile } from '~/types/types';
+import { GroupMembers, Note, Profile } from '~/types/types';
 import NoteItem from '~/components/NoteItem';
-import InsertTextModlal from '~/modals/insert-text-modal';
+import GroupSettingsModal from '~/modals/group-settings';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import InsertTextModal from '~/modals/insert-text-modal';
+import { useTheme } from '~/providers/theme-provider';
 
 const GroupPage = () => {
+  const { colorScheme } = useTheme();
+
   const { id } = useLocalSearchParams();
   const inputRef = useRef<TextInput>(null);
   const joinModalRef = useRef<BottomSheetModal>(null);
   const [showVerseModal, setShowVerseModal] = useState(false);
   const [showTextModal, setShowTextModal] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [lessonTitle, setLessonTitle] = useState('');
   const { currentUser } = useAuth();
-  const [channel, setChannel] = useState();
+  const [channel, setChannel] = useState<RealtimeChannel | undefined>();
   const [currentGroup, setCurrentGroup] = useState<Tables<'study_group'> | null>();
+  const [groupMembers, setGroupMembers] = useState<GroupMembers[] | null>();
   const [groupNotes, setGroupNotes] = useState<Note[] | null>();
   const [showDropdown, setShowDropdown] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-
+  const groupSettingsModalRef = useRef<BottomSheetModal>(null);
   // callbacks
   const handlePresentJoinModalPress = useCallback(() => {
     joinModalRef.current?.present();
@@ -62,60 +69,15 @@ const GroupPage = () => {
       .select();
   }
 
-  // async function updateNote() {
-  //   if (note === initialNote) return; // No changes to save
-
-  //   const { data: existingNote, error: fetchError } = await supabase
-  //     .from('group_notes')
-  //     .select('*')
-  //     .eq('group_id', id)
-  //     .single();
-
-  //   if (fetchError && fetchError.code !== 'PGRST116') {
-  //     console.error('Error fetching existing note:', fetchError);
-  //     return;
-  //   }
-
-  //   if (existingNote) {
-  //     const { error: updateError } = await supabase
-  //       .from('group_notes')
-  //       .update({ note })
-  //       .eq('group_id', id);
-
-  //     if (updateError) {
-  //       console.error('Error updating note:', updateError);
-  //       return;
-  //     }
-  //   } else {
-  //     const { data: noteData, error: insertError } = await supabase
-  //       .from('group_notes')
-  //       .insert({ group_id: Number(id), note })
-  //       .select()
-  //       .single();
-
-  //     if (insertError) {
-  //       console.error('Error inserting note:', insertError);
-  //       return;
-  //     }
-
-  //     const { error } = await supabase
-  //       .from('study_group')
-  //       .update({ note_id: noteData.id })
-  //       .eq('id', id);
-
-  //     console.log('update group note error: ', error);
-
-  //     if (insertError) {
-  //       console.error('Error inserting note:', insertError);
-  //       return;
-  //     }
-  //   }
-
-  //   setInitialNote(note);
-  // }
-
-  // // Call the function
-  // getBibleVerse();
+  async function addTitleToStudy() {
+    if (lessonTitle) {
+      const { data, error } = await supabase
+        .from('study_group')
+        .update({ lesson_title: lessonTitle })
+        .eq('id', id)
+        .select();
+    }
+  }
 
   useFocusEffect(
     // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
@@ -149,9 +111,11 @@ const GroupPage = () => {
          *
          * Listen to broadcast messages with a `message` event
          */
-        //  channel.on('broadcast', { event: 'message' }, ({ payload }) => {
-        //    setGroupMessages((messages) => [payload, ...messages]);
-        //  });
+        channel.on('broadcast', { event: 'message' }, ({ payload }) => {
+          console.log('broadcast payload: ', payload);
+          //@ts-expect-error
+          setGroupNotes((prev) => [...prev, payload]);
+        });
 
         channel.on('presence', { event: 'sync' }, () => {
           /** Get the presence state from the channel, keyed by realtime identifier */
@@ -161,11 +125,11 @@ const GroupPage = () => {
           const users = Object.keys(presenceState)
             .map((presenceId) => {
               const presences = presenceState[presenceId];
-              return presences.map((presence) => presence.currentUser);
+              return presences.map((presence: any) => presence.currentUser);
             })
             .flat();
 
-          setOnlineUsers(users);
+          setOnlineUsers(users as any);
         });
 
         /**
@@ -184,6 +148,7 @@ const GroupPage = () => {
          *
          * Set the channel in the state
          */
+
         setChannel(channel);
 
         /**
@@ -201,48 +166,34 @@ const GroupPage = () => {
     }, [id, currentUser?.id])
   );
 
+  async function getGroupMembers() {
+    const { data: group_members, error } = await supabase
+      .from('group_members')
+      .select('*, profiles(*)')
+      .eq('group_id', id);
+    // .neq('user_id', currentUser?.id);
+
+    if (group_members) {
+      //@ts-expect-error
+      setGroupMembers(group_members);
+    }
+  }
+
   useEffect(() => {
     getGroup();
     getGroupNote();
-
-    // Set up real-time subscription
+    getGroupMembers();
     const channel = supabase
       .channel('group')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'group_notes', filter: `group_id=eq.${id}` },
-        async (payload) => {
-          if (payload.eventType === 'INSERT') {
-            console.log('should UPDATE: ', payload.new);
-
-            const newNote = payload.new;
-
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', newNote.user_id)
-              .single();
-
-            console.log('new note: ', newNote);
-
-            const noteWithProfile = {
-              ...newNote,
-              profiles: {
-                avatar_url: profile?.avatar_url,
-                username: profile?.username,
-              },
-            };
-            //@ts-expect-error
-            setGroupNotes((prev) => [...prev, noteWithProfile]);
-          }
-        }
-      )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'study_group', filter: `id=eq.${id}` },
         (payload) => {
           console.log('new!!');
           if (payload.eventType === 'UPDATE') {
+            if (payload.new.study_title) {
+              console.log('NEW TITLE!!!');
+            }
             if (payload.new.has_started === true) {
               console.log('STUDY IS STARTING: ', payload.new);
               // router.push(`/group/${id}`);
@@ -266,7 +217,12 @@ const GroupPage = () => {
     return () => {
       supabase.removeChannel(channel); // Clean up the subscription
     };
+    // Set up real-time subscription
   }, [id]);
+
+  const handlePresentGroupSettingsModalPress = useCallback(() => {
+    groupSettingsModalRef.current?.present();
+  }, []);
 
   useEffect(() => {
     // Fade in
@@ -304,10 +260,21 @@ const GroupPage = () => {
                 onPress={() => {
                   router.push('/(app)/(tabs)');
                 }}>
-                <AntDesign name="left" size={24} color="black" />
+                <AntDesign
+                  name="left"
+                  size={24}
+                  color={colorScheme === 'dark' ? 'white' : 'black'}
+                />
               </Pressable>
-              <Text className="text-3xl font-bold">{currentGroup?.name}</Text>
+              <Text className="text-foreground text-3xl font-bold">{currentGroup?.name}</Text>
             </View>
+            <Pressable onPress={handlePresentGroupSettingsModalPress} className="">
+              <Entypo
+                name="dots-three-vertical"
+                size={24}
+                color={colorScheme === 'dark' ? 'white' : 'black'}
+              />
+            </Pressable>
           </View>
           <View className="flex-1 items-center justify-center gap-2">
             <MaterialCommunityIcons
@@ -316,11 +283,20 @@ const GroupPage = () => {
               size={70}
               color="#FFD700"
             />
-            <Text className="w-4/5  text-center font-medium">
+            <Text className="text-foreground w-4/5 text-center font-medium">
               Please wait for the admin to start the study.
             </Text>
           </View>
         </View>
+        {groupMembers && (
+          <GroupSettingsModal
+            group_id={currentGroup?.id}
+            created={currentGroup?.created_at!}
+            admin={groupMembers[0]}
+            code={currentGroup?.code!}
+            bottomSheetModalRef={groupSettingsModalRef}
+          />
+        )}
       </Container>
     );
   }
@@ -332,11 +308,15 @@ const GroupPage = () => {
           <View className="flex-1 flex-row items-center gap-2">
             <Pressable
               onPress={() => {
-                router.back();
+                if (currentGroup.has_started) {
+                  router.push('/(app)/(tabs)');
+                } else {
+                  router.back();
+                }
               }}>
-              <AntDesign name="left" size={24} color="black" />
+              <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
             </Pressable>
-            <Text className="text-3xl font-bold">{currentGroup?.name}</Text>
+            <Text className="text-foreground text-3xl font-bold">{currentGroup?.name}</Text>
           </View>
           {currentGroup.has_started && currentUser?.id === currentGroup.admin_id && (
             <>
@@ -365,93 +345,132 @@ const GroupPage = () => {
           )}
         </View>
         <View className="flex-1">
-          <Pressable
-            onPress={() => setShowDropdown((prev) => !prev)}
-            className="absolute top-5 z-10 w-full">
-            <View className="flex-row items-center justify-between rounded-xl bg-gray-200 p-3">
-              <Text className="font-medium">
-                {onlineUsers.length} {onlineUsers.length === 1 ? 'person' : 'people'} in study
-              </Text>
-              <AntDesign name={showDropdown ? 'up' : 'down'} size={20} color="black" />
-            </View>
-
-            {showDropdown && (
-              <View className="mt-2 rounded-xl bg-gray-200 p-2">
-                {onlineUsers.map((user: Profile) => (
-                  <View className="flex-row items-center gap-3 p-2" key={user.id}>
-                    {user?.avatar_url ? (
-                      <Image
-                        style={{ width: 30, aspectRatio: 1 / 1 }}
-                        className="rounded-full"
-                        source={{ uri: user.avatar_url }}
-                      />
-                    ) : (
-                      <View className="size-9 items-center justify-center rounded-full bg-gray-300">
-                        <Text className="text-base font-medium uppercase">
-                          {user.username.charAt(0)}
-                          {user.username.charAt(1)}
-                        </Text>
-                      </View>
-                    )}
-                    <Text className="text-sm">{user.username}</Text>
-                  </View>
-                ))}
+          <View className="relative h-20 ">
+            <Pressable
+              onPress={() => setShowDropdown((prev) => !prev)}
+              className="absolute top-5 z-10 w-full">
+              <View className="bg-card border-cardborder flex-row items-center justify-between rounded-xl border p-3">
+                <Text className="text-foreground font-medium">
+                  {onlineUsers.length} {onlineUsers.length === 1 ? 'person' : 'people'} in study
+                </Text>
+                <AntDesign
+                  name={showDropdown ? 'up' : 'down'}
+                  size={20}
+                  color={colorScheme === 'dark' ? 'white' : 'black'}
+                />
               </View>
-            )}
-          </Pressable>
 
-          <Animated.View
-            style={{
-              opacity: fadeAnim,
-              position: 'absolute',
-              top: 20,
-              width: '100%',
-              zIndex: 20,
-              display: showDropdown ? 'none' : 'flex',
-            }}>
-            {onlineUsers.map((user: Profile) => (
-              <View
-                className="mb-2 flex-row items-center gap-3 rounded-xl bg-gray-200 p-2"
-                key={user.id}>
-                {user?.avatar_url ? (
-                  <Image
-                    style={{ width: 30, aspectRatio: 1 / 1 }}
-                    className="rounded-full"
-                    source={{ uri: user.avatar_url }}
-                  />
-                ) : (
-                  <View className="size-9 items-center justify-center rounded-full bg-gray-300">
-                    <Text className="text-base font-medium uppercase">
-                      {user.username.charAt(0)}
-                      {user.username.charAt(1)}
-                    </Text>
-                  </View>
-                )}
-                <Text className="text-sm">{user.username} is in the study.</Text>
-              </View>
-            ))}
-          </Animated.View>
+              {showDropdown && (
+                <View className="bg-card border-cardborder mt-2 rounded-xl border p-2">
+                  {onlineUsers.map((user: Profile) => (
+                    <View className="flex-row items-center gap-3 p-2" key={user.id}>
+                      {user?.avatar_url ? (
+                        <Image
+                          style={{ width: 30, aspectRatio: 1 / 1 }}
+                          className="rounded-full"
+                          source={{ uri: user.avatar_url }}
+                        />
+                      ) : (
+                        <View className="size-9 items-center justify-center rounded-full bg-gray-300">
+                          <Text className="text-base font-medium uppercase">
+                            {user.username.charAt(0)}
+                            {user.username.charAt(1)}
+                          </Text>
+                        </View>
+                      )}
+                      <Text className="text-sm">{user.username}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </Pressable>
 
+            <Animated.View
+              style={{
+                opacity: fadeAnim,
+                position: 'absolute',
+                top: 20,
+                width: '100%',
+                zIndex: 20,
+                display: showDropdown ? 'none' : 'flex',
+              }}>
+              {onlineUsers.map((user: Profile) => (
+                <View
+                  className="mb-2 flex-row items-center gap-3 rounded-xl bg-gray-200 p-2"
+                  key={user.id}>
+                  {user?.avatar_url ? (
+                    <Image
+                      style={{ width: 30, aspectRatio: 1 / 1 }}
+                      className="rounded-full"
+                      source={{ uri: user.avatar_url }}
+                    />
+                  ) : (
+                    <View className="size-9 items-center justify-center rounded-full bg-gray-300">
+                      <Text className="text-base font-medium uppercase">
+                        {user.username.charAt(0)}
+                        {user.username.charAt(1)}
+                      </Text>
+                    </View>
+                  )}
+                  <Text className="text-sm">{user.username} is in the study.</Text>
+                </View>
+              ))}
+            </Animated.View>
+          </View>
+          <Text className="mt-5 text-center text-lg font-bold">Today's study title</Text>
           <FlatList
             data={groupNotes?.toReversed()}
-            inverted
-            style={{ marginBottom: 5, flex: 1, marginTop: 15 }}
-            contentContainerStyle={{ gap: 15 }}
+            inverted={groupNotes && groupNotes?.length > 0}
+            style={{ marginBottom: 5, flex: 1, marginTop: 20 }}
+            contentContainerStyle={{ gap: 15, flex: 1 }}
             showsVerticalScrollIndicator={false}
+            ListEmptyComponent={() => (
+              <>
+                {currentGroup.lesson_title ? (
+                  <View className="mb-20 w-3/4 flex-1 items-center justify-center gap-3 self-center">
+                    <Text className="text-center text-lg font-medium leading-6">
+                      You're all set to start!
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="mb-20 flex-1 items-center justify-center gap-3 self-center">
+                    <Text className="text-center text-lg font-medium leading-6">
+                      Start by setting a title for today's study
+                    </Text>
+                    <View className="mb-2 w-full flex-row items-center justify-between gap-3">
+                      <TextInput
+                        value={lessonTitle}
+                        onChangeText={setLessonTitle}
+                        placeholder="What's the title?"
+                        className="placeholder:text-light-foreground/70 w-full flex-1 rounded-xl bg-gray-200 p-4"
+                      />
+                      <Pressable
+                        onPress={addTitleToStudy}
+                        className="bg-light-primary size-14 items-center justify-center rounded-full">
+                        <AntDesign name="plus" size={20} color="black" />
+                      </Pressable>
+                    </View>
+                    <Pressable>
+                      <Text>Skip</Text>
+                    </Pressable>
+                  </View>
+                )}
+              </>
+            )}
             keyExtractor={(item) => item?.id?.toString()}
             renderItem={({ item }) => <NoteItem item={item} />}
           />
-          {currentGroup.has_started && (
+          {currentGroup.has_started && currentGroup.lesson_title && (
             <View className="mb-8 mt-auto flex-row justify-between gap-4 pt-2">
               <Pressable
                 onPress={() => setShowVerseModal(true)}
-                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-primary bg-light-primary/15 p-3">
+                className="border-light-primary bg-light-primary/15 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border p-3">
                 <Text className="text-lg font-medium">Bible Verse</Text>
                 <AntDesign name="plus" size={15} color="black" />
               </Pressable>
               <Pressable
                 onPress={() => setShowTextModal(true)}
-                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-light-secondary bg-light-secondary/15 p-3">
+                className="border-light-secondary bg-light-secondary/15 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border p-3">
                 <Text className="text-lg font-medium">Text</Text>
                 <AntDesign name="plus" size={15} color="black" />
               </Pressable>
@@ -461,8 +480,18 @@ const GroupPage = () => {
       </View>
 
       <JoinGroupModal code={currentGroup?.code} bottomSheetModalRef={joinModalRef} />
-      <GetVerseModal groupId={id} visible={showVerseModal} setVisible={setShowVerseModal} />
-      <InsertTextModlal groupId={id} visible={showTextModal} setVisible={setShowTextModal} />
+      <GetVerseModal
+        channel={channel}
+        groupId={id}
+        visible={showVerseModal}
+        setVisible={setShowVerseModal}
+      />
+      <InsertTextModal
+        channel={channel}
+        groupId={id}
+        visible={showTextModal}
+        setVisible={setShowTextModal}
+      />
     </Container>
   );
 };

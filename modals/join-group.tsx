@@ -7,6 +7,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Picker } from '@react-native-picker/picker';
 import { supabase } from '~/utils/supabase';
 import { router } from 'expo-router';
+import { useTheme } from '~/providers/theme-provider';
 const JoinGroupModal = ({
   code,
   bottomSheetModalRef,
@@ -14,6 +15,7 @@ const JoinGroupModal = ({
   code: number;
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
 }) => {
+  const { colorScheme } = useTheme();
   // ref
   const snapPoints = useMemo(() => ['30%'], []);
   // callbacks
@@ -37,23 +39,25 @@ const JoinGroupModal = ({
     <BottomSheetModalProvider>
       <BottomSheetModal
         containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+        handleStyle={{ backgroundColor: colorScheme === 'dark' ? '#212121' : 'white' }}
+        handleIndicatorStyle={{ backgroundColor: colorScheme === 'dark' ? 'white' : 'black' }}
         ref={bottomSheetModalRef}
         snapPoints={snapPoints}
         index={1}
         onChange={handleSheetChanges}>
-        <BottomSheetView style={styles.contentContainer}>
+        <BottomSheetView className="bg-card" style={styles.contentContainer}>
           <View className="flex-1 items-center justify-center gap-3 p-2">
-            <Text className="text-xl font-medium">
+            <Text className="text-foreground text-xl font-medium">
               Share this code with someone and invite them to this study!
             </Text>
             <Pressable className="flex-row items-center gap-2 p-3">
-              <Text className="text-4xl">#</Text>
-              <Text className="rounded-xl bg-light-primary p-3 text-4xl font-bold">{code}</Text>
+              <Text className="text-foreground text-4xl">#</Text>
+              <Text className="bg-primary rounded-xl p-3 text-4xl font-bold">{code}</Text>
             </Pressable>
             <View className="mt-auto gap-3">
               <Pressable
                 onPress={shareGroup}
-                className=" w-full flex-row items-center justify-between gap-3 rounded-lg bg-light-secondary p-4">
+                className=" bg-secondary w-full flex-row items-center justify-between gap-3 rounded-lg p-4">
                 <Text className="text-xl font-semibold">Share code</Text>
                 <Feather name="share" size={24} color="black" />
               </Pressable>

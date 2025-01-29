@@ -65,16 +65,16 @@ const ProfilePage = () => {
               source={{ uri: currentUser.avatar_url }}
             />
           ) : (
-            <View className="size-28 items-center justify-center rounded-full bg-light-secondary ">
-              <Text className="text-3xl font-semibold uppercase">
+            <View className="bg-light-secondary size-28 items-center justify-center rounded-full ">
+              <Text className="text-foreground text-3xl font-semibold uppercase">
                 {currentUser?.username?.charAt(0)}
                 {currentUser?.username?.charAt(1)}
               </Text>
             </View>
           )}
           <View className="gap-1">
-            <Text className="text-2xl font-semibold">{currentUser?.username}</Text>
-            <Text className=" font-medium">
+            <Text className="text-foreground text-2xl font-semibold">{currentUser?.username}</Text>
+            <Text className="text-foreground font-medium">
               Joined: {currentUser && new Date(currentUser.created_at).toDateString()}
             </Text>
           </View>
@@ -102,18 +102,19 @@ const ProfilePage = () => {
               </View>
             </View> */}
         </View>
-        <View className="items-center justify-center gap-2 rounded-2xl bg-gray-200 p-4">
-          <Text className="text-xl font-bold">Bible Study By Prayse</Text>
-          <Text className="">v.1.0.0</Text>
+        <View className="bg-card border-cardborder items-center justify-center gap-2 rounded-2xl border p-4">
+          <Text className="text-foreground text-xl font-bold">Bible Study By Prayse</Text>
+          <Text className="text-foreground">v.1.0.0</Text>
         </View>
-        <View className="justify-center gap-1 rounded-2xl bg-gray-200 p-4">
-          <Text className="text-center">App Theme Verse</Text>
-          <Text className="text-lg font-semibold">2 Timothy 2:15</Text>
-          <Text>
+        <View className="bg-card border-cardborder justify-center gap-1  rounded-2xl border p-4">
+          <Text className="text-foreground text-center">App Theme Verse</Text>
+          <Text className="text-foreground text-lg font-semibold">2 Timothy 2:15</Text>
+          <Text className="text-foreground">
             Be diligent to present yourself approved to God, a worker who does not need to be
             ashamed, rightly dividing the word of truth.
           </Text>
         </View>
+        <Text className="text-foreground text-lg font-medium">Check out our prayer list app</Text>
         <View className="mb-10 mt-auto gap-3">
           <Pressable
             onPress={() => {

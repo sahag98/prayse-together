@@ -1,5 +1,7 @@
 import {
   ActivityIndicator,
+  Appearance,
+  ColorSchemeName,
   FlatList,
   Image,
   Pressable,
@@ -15,6 +17,10 @@ import { AntDesign, Feather } from '@expo/vector-icons';
 
 const Plans = () => {
   const { next, title } = useLocalSearchParams();
+
+  const [colorScheme, setColorScheme] = useState<ColorSchemeName | string>(
+    Appearance.getColorScheme()
+  );
 
   //   console.log('params: ', params);
 
@@ -49,9 +55,9 @@ const Plans = () => {
               onPress={() => {
                 router.push('/plans');
               }}>
-              <AntDesign name="left" size={24} color="black" />
+              <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
             </Pressable>
-            <Text className="text-3xl font-bold">{title} Plans</Text>
+            <Text className="text-3xl font-bold text-foreground">{title} Plans</Text>
           </View>
         </View>
         <FlatList
@@ -59,6 +65,7 @@ const Plans = () => {
           numColumns={1}
           contentContainerStyle={{ flexGrow: 1, gap: 10 }}
           showsVerticalScrollIndicator={false}
+          ListFooterComponent={() => <View className="h-24" />}
           ListEmptyComponent={() => (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator />
@@ -66,8 +73,10 @@ const Plans = () => {
           )}
           keyExtractor={(item) => item?.slug}
           renderItem={({ item }) => (
-            <View className="w-full flex-1 flex-row items-center justify-between gap-5 rounded-lg border-gray-300 bg-gray-200 p-3">
-              <View className="flex-1 flex-row items-center gap-4 ">
+            <Pressable
+              onPress={() => router.push(`/plans/${next}/${item.slug}?title=${item.title}`)}
+              className="w-full flex-1 flex-row items-center justify-between gap-5 overflow-hidden rounded-2xl border border-cardborder bg-card p-3">
+              <View className="flex-1 flex-row items-center gap-4  ">
                 <Image
                   source={{ uri: item.image }}
                   style={{
@@ -80,16 +89,14 @@ const Plans = () => {
                 />
 
                 <View className="w-fit flex-1 gap-7">
-                  <Text className="font-semibold">{item.title}</Text>
+                  <Text className="text-lg font-semibold text-foreground">{item.title}</Text>
                 </View>
               </View>
 
-              <Pressable
-                onPress={() => router.push(`/plans/${next}/${item.slug}?title=${item.title}`)}
-                className=" items-center justify-center rounded-full bg-light-primary px-4 py-3">
-                <Text className=" font-bold">View Study</Text>
-              </Pressable>
-            </View>
+              {/* <View className="h-full w-20 items-center justify-center bg-primary">
+                <AntDesign name="right" size={24} color="black" />
+              </View> */}
+            </Pressable>
           )}
         />
       </View>

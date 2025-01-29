@@ -26,7 +26,10 @@ import JoinGroupModal from '~/modals/join-group';
 import { GroupMembers } from '~/types/types';
 import axios from 'axios';
 import GroupSettingsModal from '~/modals/group-settings';
+import { useTheme } from '~/providers/theme-provider';
 const StartStudy = () => {
+  const { colorScheme } = useTheme();
+
   const { currentUser } = useAuth();
   const { id } = useLocalSearchParams();
   const [currentGroup, setCurrentGroup] = useState<Tables<'study_group'> | null>();
@@ -178,12 +181,16 @@ const StartStudy = () => {
               onPress={() => {
                 router.push('/(app)/(tabs)');
               }}>
-              <AntDesign name="left" size={24} color="black" />
+              <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
             </Pressable>
-            <Text className="text-3xl font-bold">{currentGroup?.name}</Text>
+            <Text className="text-foreground text-3xl font-bold">{currentGroup?.name}</Text>
           </View>
           <Pressable onPress={handlePresentGroupSettingsModalPress} className="">
-            <Entypo name="dots-three-vertical" size={24} color="black" />
+            <Entypo
+              name="dots-three-vertical"
+              size={24}
+              color={colorScheme === 'dark' ? 'white' : 'black'}
+            />
           </Pressable>
         </View>
         {/* SAVING THIS FEATURE FOR THE FIRST UPDATE */}
@@ -235,16 +242,20 @@ const StartStudy = () => {
         )} */}
 
         <View className="flex-1 items-center justify-center gap-3">
-          <View className="mt-5 max-h-52 w-full gap-4 rounded-2xl border border-light-secondary p-3">
+          <View className="border-secondary bg-card mt-5 max-h-52 w-full gap-4 rounded-2xl border p-3">
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
-                <Text className="text-xl font-semibold">Members </Text>
-                <FontAwesome5 name="user" size={20} color="black" />
+                <Text className="text-foreground text-xl font-semibold">Members </Text>
+                <FontAwesome5
+                  name="user"
+                  size={20}
+                  color={colorScheme === 'dark' ? 'white' : 'black'}
+                />
               </View>
               <Pressable
                 onPress={handlePresentJoinModalPress}
-                className="flex-row items-center gap-2 rounded-xl bg-light-secondary p-3">
-                <Entypo name="plus" size={24} color="black" />
+                className="bg-secondary flex-row items-center gap-2 rounded-xl p-3">
+                <Entypo name="plus" size={24} color={'black'} />
               </Pressable>
             </View>
             <FlatList
@@ -253,7 +264,7 @@ const StartStudy = () => {
               keyExtractor={(item) => item.id.toString()}
               ListEmptyComponent={() => (
                 <View className="items-center">
-                  <Text>No members have joined yet.</Text>
+                  <Text className="text-foreground">No members have joined yet.</Text>
                 </View>
               )}
               renderItem={({ item }) => (
@@ -266,28 +277,30 @@ const StartStudy = () => {
                         source={{ uri: item.profiles.avatar_url }}
                       />
                     ) : (
-                      <View className="size-10 items-center justify-center rounded-full bg-gray-200">
-                        <Text className="text-base font-medium uppercase">
+                      <View className="bg-card size-10 items-center justify-center rounded-full">
+                        <Text className="text-foreground text-base font-medium uppercase">
                           {item.profiles.username.charAt(0)}
                           {item.profiles.username.charAt(1)}
                         </Text>
                       </View>
                     )}
                   </View>
-                  <Text>{item.profiles.username}</Text>
+                  <Text className="text-foreground">{item.profiles.username}</Text>
                 </View>
               )}
             />
           </View>
           <View className="flex-1 items-center justify-center gap-5">
             {currentGroup?.description && (
-              <Text className="text-xl font-bold">{currentGroup?.description}</Text>
+              <Text className="text-foreground text-lg font-medium">
+                {currentGroup?.description}
+              </Text>
             )}
 
-            <Pressable onPress={startStudy} className="rounded-xl bg-light-primary p-4">
+            <Pressable onPress={startStudy} className="bg-primary rounded-xl p-4">
               <Text className="text-lg font-bold">START STUDY</Text>
             </Pressable>
-            <Text>
+            <Text className="text-foreground">
               As an admin, you can either start a personal bible study or invite others for a group
               study.
             </Text>

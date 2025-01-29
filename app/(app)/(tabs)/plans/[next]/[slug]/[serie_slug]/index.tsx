@@ -1,14 +1,17 @@
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Container } from '~/components/Container';
 import { WebView } from 'react-native-webview';
 import { AntDesign } from '@expo/vector-icons';
 import { useUserStore } from '~/store/store';
 import { useQuery } from '@tanstack/react-query';
+import { useTheme } from '~/providers/theme-provider';
 const SeriePage = () => {
   const { serie_slug, name } = useLocalSearchParams();
   const { addPlan, studiedPlans } = useUserStore();
+
+  const { colorScheme } = useTheme();
 
   const [isFinished, setIsFinished] = useState(false);
 
@@ -61,17 +64,19 @@ const SeriePage = () => {
             onPress={() => {
               router.back();
             }}>
-            <AntDesign name="left" size={24} color="black" />
+            <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
           </Pressable>
-          <Text className="flex-1 text-3xl font-bold">{name}</Text>
+          <Text className="text-foreground flex-1 text-3xl font-bold">{name}</Text>
         </View>
       </View>
       {/* <RenderHTML contentWidth={width} source={{ html: `${htmlContent}` }} /> */}
       <WebView
         originWhitelist={['*']}
-        style={{ flex: 1, backgroundColor: '#FAF9F6' }}
+        style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#121212' : '#FAF9F6' }}
         source={{ html: `${data}` }}
         injectedJavaScript={`
+
+          document.body.style.color = '${colorScheme === 'dark' ? '#FFFFFF' : '#000000'}';
     document.addEventListener('scroll', () => {
       const { scrollHeight, scrollTop, clientHeight } = document.documentElement;
       if (scrollTop + clientHeight >= scrollHeight) {
@@ -95,7 +100,7 @@ const SeriePage = () => {
         }}
         className={
           isFinished
-            ? 'w-full items-center justify-center self-center bg-light-primary p-4'
+            ? 'bg-primary w-full items-center justify-center self-center p-4'
             : 'w-full items-center justify-center self-center bg-gray-200 p-4'
         }>
         <Text

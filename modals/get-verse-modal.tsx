@@ -11,12 +11,15 @@ import React, { useState } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { supabase } from '~/utils/supabase';
 import { useAuth } from '~/providers/auth-provider';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 const GetVerseModal = ({
+  channel,
   groupId,
   visible,
   setVisible,
 }: {
+  channel: RealtimeChannel | undefined;
   groupId: string | string[];
   visible: boolean;
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -40,6 +43,25 @@ const GetVerseModal = ({
       .from('group_notes')
       .insert({ group_id: Number(groupId), note, reference, user_id: currentUser?.id })
       .select();
+
+    if (noteData && currentUser) {
+      channel?.send({
+        type: 'broadcast',
+        event: 'message',
+        payload: {
+          id: noteData[0].id,
+          note,
+          created_at: noteData[0].created_at,
+          reference,
+          group_id: Number(groupId),
+          user_id: currentUser.id,
+          profiles: {
+            username: currentUser.username,
+            avatar_url: currentUser.avatar_url,
+          },
+        },
+      });
+    }
   }
 
   async function getBibleVerse() {
@@ -140,9 +162,9 @@ const GetVerseModal = ({
             </View> */}
             {activeTab === 'range' && (
               <View className="flex-row items-center gap-2">
-                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                <View className="size-14 items-center justify-center rounded-lg border p-2">
                   <TextInput
-                    className="w-full text-center"
+                    className="h-full w-full text-center"
                     value={chapter}
                     onChangeText={setChapter}
                     numberOfLines={1}
@@ -150,9 +172,9 @@ const GetVerseModal = ({
                   />
                 </View>
                 <Text className="text-lg font-bold">:</Text>
-                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                <View className="size-14 items-center justify-center rounded-lg border p-2">
                   <TextInput
-                    className="w-full text-center"
+                    className="h-full w-full text-center"
                     value={verse}
                     numberOfLines={1}
                     onChangeText={setVerse}
@@ -160,9 +182,9 @@ const GetVerseModal = ({
                   />
                 </View>
                 <Text className="text-lg font-bold">-</Text>
-                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                <View className="size-14 items-center justify-center rounded-lg border p-2">
                   <TextInput
-                    className="w-full text-center"
+                    className="h-full w-full text-center"
                     value={verseEnd}
                     numberOfLines={1}
                     onChangeText={setVerseEnd}
@@ -173,9 +195,9 @@ const GetVerseModal = ({
             )}
             {activeTab === 'specific' && (
               <View className="flex-row items-center gap-2">
-                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                <View className="size-14 items-center justify-center rounded-lg border p-2">
                   <TextInput
-                    className="w-full text-center"
+                    className="h-full w-full text-center"
                     value={chapter}
                     onChangeText={setChapter}
                     numberOfLines={1}
@@ -183,9 +205,9 @@ const GetVerseModal = ({
                   />
                 </View>
                 <Text className="text-lg font-bold">:</Text>
-                <View className="size-12 items-center justify-center rounded-lg border p-2">
+                <View className="size-14 items-center justify-center rounded-lg border p-2">
                   <TextInput
-                    className="w-full text-center"
+                    className="h-full w-full text-center"
                     value={verse}
                     numberOfLines={1}
                     onChangeText={setVerse}

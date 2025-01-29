@@ -5,6 +5,8 @@ import { Alert } from 'react-native';
 import { useAuth } from '~/providers/auth-provider';
 import * as Notifications from 'expo-notifications';
 import { useNotificationObserver } from '~/hooks/useNotificationObserver';
+import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '~/providers/theme-provider';
 export const unstable_settings = {
   initialRouteName: 'index',
 };
@@ -19,6 +21,7 @@ Notifications.setNotificationHandler({
 
 export default function AppIndexLayout() {
   const { currentUser, session } = useAuth();
+  const { colorScheme } = useTheme();
   useNotificationObserver();
 
   const networkState = useNetworkState();
@@ -36,22 +39,20 @@ export default function AppIndexLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen
-        name="group"
-        options={{
-          animation: 'fade',
-        }}
-      />
-      <Stack.Screen
-        name="profile"
-        options={{
-          presentation: 'modal',
-          sheetAllowedDetents: [0.75, 1],
-          sheetGrabberVisible: true,
-          headerShown: false,
-        }}
-      />
-    </Stack>
+    <>
+      {/* <StatusBar style="light" /> */}
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="group" />
+        <Stack.Screen
+          name="profile"
+          options={{
+            presentation: 'modal',
+            sheetAllowedDetents: [0.75, 1],
+            sheetGrabberVisible: true,
+            headerShown: false,
+          }}
+        />
+      </Stack>
+    </>
   );
 }

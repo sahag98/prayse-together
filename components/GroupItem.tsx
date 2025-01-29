@@ -1,4 +1,4 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import { Appearance, ColorSchemeName, Image, Pressable, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 
 import { Feather } from '@expo/vector-icons';
@@ -7,20 +7,17 @@ import { GroupMembers, Note } from '~/types/types';
 import { supabase } from '~/utils/supabase';
 import { useAuth } from '~/providers/auth-provider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-
+import { useActionSheet } from '@expo/react-native-action-sheet';
+import { useTheme } from '~/providers/theme-provider';
 type GroupItemProps = {
   title: string;
 };
 
 const GroupItem = ({ item }: { item: GroupMembers }) => {
-  const [recentNotes, setRecentNotes] = useState<Note | null>();
+  const { colorScheme } = useTheme();
 
-  const {
-    data: groupAdmin,
-    isFetched,
-    isLoadingError,
-    isLoading,
-  } = useQuery({
+  const { showActionSheetWithOptions } = useActionSheet();
+  const { data: groupAdmin } = useQuery({
     queryKey: ['admin', item.group_id],
     queryFn: getGroupAdmin,
   });
@@ -52,6 +49,29 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
       supabase.removeChannel(channel);
     };
   }, [item.id]);
+  const onLongPress = () => {
+    const options = ['Delete', 'Save', 'Cancel'];
+    const destructiveButtonIndex = 0;
+    const cancelButtonIndex = 2;
+
+    showActionSheetWithOptions(
+      {
+        options,
+        cancelButtonIndex,
+        destructiveButtonIndex,
+      },
+      (selectedIndex: number) => {
+        switch (selectedIndex) {
+          case destructiveButtonIndex:
+            // Delete
+            break;
+
+          case cancelButtonIndex:
+          // Canceled
+        }
+      }
+    );
+  };
 
   // useEffect(() => {
   //   getGroupAdmin();
@@ -82,9 +102,26 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
 
   return (
     <Link asChild href={`/group/${item.group_id}`}>
-      <Pressable className="aspect-square max-h-52 w-1/2 flex-1 justify-between gap-2 rounded-lg border-gray-300 bg-gray-200 p-3">
+      <Pressable
+        onLongPress={onLongPress}
+        style={
+          colorScheme === 'light'
+            ? {
+                shadowColor: '#c2c2c2',
+                shadowOffset: {
+                  width: 0,
+                  height: 5,
+                },
+                shadowOpacity: 0.17,
+                shadowRadius: 3.05,
+                elevation: 4,
+              }
+            : ''
+        }
+        className=" bg-card border-cardborder aspect-square max-h-52 flex-1 justify-between gap-2 rounded-2xl border p-3">
         <View className="gap-2">
-          <Text className="text-lg font-semibold">{item.study_group.name}</Text>
+          <Text className="text-foreground text-xl font-semibold">{item.study_group.name}</Text>
+          <Text className="text-foreground text-sm">{item.study_group.description}</Text>
           {groupAdmin?.profiles?.id !== currentUser?.id && (
             <View className="flex-row items-center gap-1.5 text-sm">
               {groupAdmin?.profiles?.avatar_url ? (
@@ -94,7 +131,7 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
                   className="size-10 rounded-full"
                 />
               ) : (
-                <View className="rounded-full bg-light-background p-1">
+                <View className="bg-background rounded-full p-1">
                   <Feather name="user" size={12} color="black" />
                 </View>
               )}
@@ -110,7 +147,7 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
                 position: 'relative',
                 marginLeft: index > 0 ? -10 : 0,
               }}
-              className="size-7 items-center justify-center rounded-full border border-gray-400 bg-light-secondary"
+              className="bg-secondary size-7 items-center justify-center rounded-full border border-gray-400"
               key={member.user_id}>
               <Text className="text-xs uppercase">
                 {member.profiles?.username?.charAt(0)}

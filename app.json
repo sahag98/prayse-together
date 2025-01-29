@@ -5,12 +5,22 @@
     "version": "1.0.0",
     "newArchEnabled": true,
     "scheme": "prayse-together",
+    "userInterfaceStyle": "automatic",
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "react-native-bottom-tabs",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -47,7 +57,7 @@
     },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+
     "splash": {
       "image": "./assets/splash-image.png",
       "resizeMode": "contain",

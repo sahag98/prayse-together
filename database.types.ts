@@ -129,6 +129,48 @@ export type Database = {
           },
         ]
       }
+      members: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean | null
+          study_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          study_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          study_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_study_id_fkey"
+            columns: ["study_id"]
+            isOneToOne: false
+            referencedRelation: "studies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -168,6 +210,41 @@ export type Database = {
         }
         Relationships: []
       }
+      studies: {
+        Row: {
+          admin_id: string
+          code: number
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          code: number
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          code?: number
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studies_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_group: {
         Row: {
           admin_id: string | null
@@ -177,6 +254,7 @@ export type Database = {
           frequency: string | null
           has_started: boolean
           id: number
+          lesson_title: string | null
           name: string
           note_id: number | null
           study_time: string | null
@@ -189,6 +267,7 @@ export type Database = {
           frequency?: string | null
           has_started?: boolean
           id?: number
+          lesson_title?: string | null
           name: string
           note_id?: number | null
           study_time?: string | null
@@ -201,6 +280,7 @@ export type Database = {
           frequency?: string | null
           has_started?: boolean
           id?: number
+          lesson_title?: string | null
           name?: string
           note_id?: number | null
           study_time?: string | null
@@ -254,6 +334,47 @@ export type Database = {
           },
           {
             foreignKeyName: "study_notes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      todos: {
+        Row: {
+          counter: number
+          created_at: string | null
+          deleted: boolean | null
+          done: boolean | null
+          id: string
+          text: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          counter?: number
+          created_at?: string | null
+          deleted?: boolean | null
+          done?: boolean | null
+          id?: string
+          text?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          counter?: number
+          created_at?: string | null
+          deleted?: boolean | null
+          done?: boolean | null
+          id?: string
+          text?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todos_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"

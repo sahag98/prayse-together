@@ -3,9 +3,7 @@ import { useNotificationObserver } from '~/hooks/useNotificationObserver';
 import { useAuth } from '~/providers/auth-provider';
 
 export default function AuthRoutesLayout() {
-  const { currentUser, session } = useAuth();
-
-  console.log('hereeee');
+  const { currentUser } = useAuth();
 
   if (currentUser) return <Redirect href="/(app)/(tabs)" />;
 
