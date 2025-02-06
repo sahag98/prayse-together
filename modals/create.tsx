@@ -13,9 +13,11 @@ import { supabase } from '~/utils/supabase';
 import { Tables } from '~/database.types';
 import { useAuth } from '~/providers/auth-provider';
 import { useQueryClient } from '@tanstack/react-query';
-import { Feather } from '@expo/vector-icons';
+import { AntDesign, Feather } from '@expo/vector-icons';
 import { emojies } from '~/constants/Emojis';
 import { useTheme } from '~/providers/theme-provider';
+import { useUserStore } from '~/store/store';
+import { Link } from 'expo-router';
 
 const InputComponent = ({ value, setValue }: { value: string; setValue: any }) => {
   const [title, setTitle] = useState('');
@@ -43,16 +45,16 @@ const CreateGroupBottomModal = ({
 
   const [groupname, setGroupname] = useState('');
   const [groupdescription, setGroupdescription] = useState('');
-  const [selectedEmoji, setSelectedEmoji] = useState('');
+  const { selectedEmoji, fetchStudies, setSelectedEmoji } = useUserStore();
+  // const [selectedEmoji, setSelectedEmoji] = useState('');
   const [groupFrequency, setGroupFrequency] = useState('');
   const [groupCode, setGroupCode] = useState<any | null>();
   const [activeTab, setActiveTab] = useState('create');
   const queryClient = useQueryClient();
-  const { getUserGroups } = useAuth();
   const [date, setDate] = useState(new Date());
   const [mode, setMode] = useState('date');
   const [show, setShow] = useState(false);
-  // ref
+
   const snapPoints = useMemo(() => ['25%', '50%'], []);
   // callbacks
 
@@ -98,6 +100,7 @@ const CreateGroupBottomModal = ({
       bottomSheetModalRef.current?.close();
       setGroupname('');
       setGroupdescription('');
+
       queryClient.invalidateQueries({
         queryKey: ['groups'],
       });
@@ -112,6 +115,8 @@ const CreateGroupBottomModal = ({
           },
         ])
         .select();
+
+      fetchStudies(currentUser?.id!);
     } catch (error) {
       console.log(error);
     }
@@ -164,8 +169,9 @@ const CreateGroupBottomModal = ({
     } catch (error) {
       console.log('something went wrong: ', error);
     } finally {
+      fetchStudies(currentUser?.id!);
       // getUserGroups();
-      bottomSheetModalRef.current?.close();
+      bottomSheetModalRef.current?.dismiss();
       setGroupCode(null);
       queryClient.invalidateQueries({
         queryKey: ['groups'],
@@ -173,19 +179,17 @@ const CreateGroupBottomModal = ({
       setActiveTab('create');
     }
   }
-  console.log(activeTab);
 
   // renders
   return (
     <BottomSheetModalProvider>
       <BottomSheetModal
+        backgroundStyle={{ backgroundColor: colorScheme === 'dark' ? '#212121' : 'white' }}
         ref={bottomSheetModalRef}
         containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
         handleIndicatorStyle={{ backgroundColor: colorScheme === 'dark' ? '#787878' : 'black' }}
         handleStyle={{
           backgroundColor: colorScheme === 'dark' ? '#212121' : 'white',
-          borderTopEndRadius: 15,
-          borderTopLeftRadius: 15,
         }}
         snapPoints={snapPoints}
         index={2}
@@ -194,22 +198,46 @@ const CreateGroupBottomModal = ({
           <View className="mb-3 flex-row gap-4 rounded-lg border border-cardborder bg-card p-2">
             <Pressable
               onPress={() => setActiveTab('create')}
-              style={{ backgroundColor: activeTab === 'create' ? '#87ceeb' : '' }}
+              style={{
+                backgroundColor:
+                  activeTab === 'create' ? '#87ceeb' : colorScheme === 'dark' ? '#212121' : 'white',
+              }}
               className="flex-1 items-center justify-center rounded-md bg-secondary  p-3">
               <Text
-                style={{ color: activeTab === 'create' ? 'black' : 'white' }}
-                className="font-bold">
+                style={{
+                  color:
+                    activeTab === 'create'
+                      ? colorScheme === 'dark'
+                        ? 'black'
+                        : 'black'
+                      : colorScheme === 'dark'
+                        ? 'white'
+                        : 'black',
+                }}
+                className="font-nunito-bold text-base sm:text-lg">
                 CREATE
               </Text>
             </Pressable>
-            <View className="h-full w-0.5 bg-background dark:bg-input" />
+            <View className="h-full w-0.5 bg-input dark:bg-input" />
             <Pressable
               onPress={() => setActiveTab('join')}
-              style={{ backgroundColor: activeTab === 'join' ? '#87ceeb' : '' }}
+              style={{
+                backgroundColor:
+                  activeTab === 'join' ? '#87ceeb' : colorScheme === 'dark' ? '#212121' : 'white',
+              }}
               className="flex-1 items-center  justify-center rounded-md p-2">
               <Text
-                style={{ color: activeTab === 'join' ? 'black' : 'white' }}
-                className="font-bold text-foreground">
+                style={{
+                  color:
+                    activeTab === 'join'
+                      ? colorScheme === 'dark'
+                        ? 'black'
+                        : 'black'
+                      : colorScheme === 'dark'
+                        ? 'white'
+                        : 'black',
+                }}
+                className="font-nunito-bold text-base sm:text-lg">
                 JOIN
               </Text>
             </Pressable>
@@ -223,21 +251,25 @@ const CreateGroupBottomModal = ({
                     defaultValue={groupname}
                     onChangeText={setGroupname}
                     selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
-                    placeholder="What's the title of this study?"
-                    className="flex-1 rounded-xl bg-input p-4 text-foreground placeholder:text-input_placeholder"
+                    placeholder="What's the name of this study?"
+                    placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
+                    className="flex-1 rounded-xl bg-input p-4 font-nunito-medium text-foreground"
                     //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
                   />
 
-                  <Pressable className="size-12 items-center justify-center rounded-full bg-input">
-                    <Text>{selectedEmoji}</Text>
-                  </Pressable>
+                  <Link href={{ pathname: '/emoji-picker' }}>
+                    <View className="size-12 items-center justify-center rounded-full bg-input">
+                      <Text>{selectedEmoji}</Text>
+                    </View>
+                  </Link>
                 </View>
                 <BottomSheetTextInput
                   defaultValue={groupdescription}
                   onChangeText={setGroupdescription}
                   selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
                   placeholder="What's the description of this study?"
-                  className="rounded-xl bg-input p-4 text-foreground placeholder:text-input_placeholder"
+                  placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
+                  className="rounded-xl bg-input p-4 font-nunito-medium text-foreground"
                   //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
                 />
 
@@ -309,7 +341,7 @@ const CreateGroupBottomModal = ({
                       ? 'mt-1 items-center justify-center rounded-3xl bg-primary p-4 opacity-40'
                       : 'mt-1 items-center justify-center rounded-3xl bg-primary p-4'
                   }>
-                  <Text className="text-lg font-bold">CREATE</Text>
+                  <Text className="font-nunito-bold text-lg sm:text-xl">CREATE</Text>
                 </Pressable>
               </View>
             </View>
@@ -319,9 +351,10 @@ const CreateGroupBottomModal = ({
                 <BottomSheetTextInput
                   defaultValue={groupCode}
                   onChangeText={setGroupCode}
-                  placeholder="Enter group code"
+                  placeholder="What's the group code?"
                   keyboardType="numeric"
-                  className="rounded-3xl bg-input p-4 placeholder:text-input_placeholder"
+                  placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
+                  className="rounded-3xl bg-input p-4 text-foreground"
                   //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
                 />
 
@@ -333,8 +366,18 @@ const CreateGroupBottomModal = ({
                       ? 'mt-1 items-center justify-center rounded-3xl bg-primary p-4 opacity-40'
                       : 'mt-1 items-center justify-center rounded-3xl bg-primary p-4'
                   }>
-                  <Text className="text-lg font-bold">JOIN</Text>
+                  <Text className="font-nunito-bold text-lg sm:text-xl">JOIN</Text>
                 </Pressable>
+                <View className="mt-2 gap-2 rounded-2xl border border-cardborder p-2">
+                  <AntDesign
+                    name="infocirlceo"
+                    size={20}
+                    color={colorScheme === 'dark' ? 'white' : 'black'}
+                  />
+                  <Text className="font-nunito-regular text-base text-foreground sm:text-lg">
+                    The study leader has to send you a code for you to join that bible study.
+                  </Text>
+                </View>
               </View>
             </View>
           )}

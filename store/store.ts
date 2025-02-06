@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import AsyncStorage from 'expo-sqlite/kv-store';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Note } from '~/types/types';
+import { GroupMembers, Note } from '~/types/types';
+import { supabase } from '~/utils/supabase';
 
 export type note = {
   id: string;
@@ -11,6 +12,8 @@ export type note = {
   data: Note[];
 };
 export interface AppState {
+  selectedEmoji: string;
+  setSelectedEmoji: (data:string)=>void;
   notes: note[];
   studiedPlans: string[];
   saveNotes: (data: { id: string; creationDate: string; groupName: string; data: Note[] }) => void;
@@ -18,11 +21,48 @@ export interface AppState {
   removePlans: () => void;
   removeNote: (id:string)=>void;
   addPlan: (data: string) => void;
+  studies: GroupMembers [],
+  fetchStudies: (userId: string)=> Promise<void>;
+   removeStudy: (userId:string, adminId:string,studyId: string) => void;
 }
 
 export const useUserStore = create(
   persist<AppState>(
     (set, get) => ({
+      selectedEmoji:"",
+      setSelectedEmoji: (data)=>{
+        set({selectedEmoji:data})
+      },
+      studies:[],
+      fetchStudies: async (userId) => {
+    const { data, error } = await supabase
+      .from('group_members')
+      .select('*, study_group(*), profiles(username)')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error && !data) {
+      console.error('Error fetching studies:', error);
+      return;
+    }
+    //@ts-ignore
+    set({ studies: data || [] });
+  },
+  removeStudy: async (userId, adminId,studyId) => {
+      if (userId === adminId) {
+      await supabase.from('study_group').delete().eq('id', studyId);
+      } else {
+      await supabase
+        .from('group_members')
+        .delete()
+        .eq('user_id', userId)
+        .eq('group_id', studyId);
+    }
+ set((state) => ({
+      studies: state.studies.filter((study) => study.study_group.id !== Number(studyId)),
+    }))
+  },
+  
       studiedPlans: [],
       notes: [],
       saveNotes: (data: { id: string; creationDate: string; groupName: string; data: Note[] }) => {

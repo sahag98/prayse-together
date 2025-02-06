@@ -146,8 +146,8 @@ const StartStudy = () => {
           const message = {
             to: m.profiles.token,
             sound: 'default',
-            title: `${currentGroup?.name} 📖`,
-            body: `This bible study is starting. Tap to join.`,
+            title: `${currentGroup?.name}`,
+            body: `Your Bible study is about to begin! Tap to join.`,
             data: {
               route: `/group/${id}`,
             },
@@ -183,7 +183,9 @@ const StartStudy = () => {
               }}>
               <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
             </Pressable>
-            <Text className="text-foreground text-3xl font-bold">{currentGroup?.name}</Text>
+            <Text className="font-nunito-bold text-3xl text-foreground sm:text-4xl">
+              {currentGroup?.name}
+            </Text>
           </View>
           <Pressable onPress={handlePresentGroupSettingsModalPress} className="">
             <Entypo
@@ -242,10 +244,12 @@ const StartStudy = () => {
         )} */}
 
         <View className="flex-1 items-center justify-center gap-3">
-          <View className="border-secondary bg-card mt-5 max-h-52 w-full gap-4 rounded-2xl border p-3">
+          <View className="mt-5 max-h-52 w-full gap-4 rounded-2xl border border-secondary bg-card p-3">
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
-                <Text className="text-foreground text-xl font-semibold">Members </Text>
+                <Text className="font-nunito-semibold text-xl text-foreground sm:text-2xl">
+                  Members{' '}
+                </Text>
                 <FontAwesome5
                   name="user"
                   size={20}
@@ -254,7 +258,7 @@ const StartStudy = () => {
               </View>
               <Pressable
                 onPress={handlePresentJoinModalPress}
-                className="bg-secondary flex-row items-center gap-2 rounded-xl p-3">
+                className="flex-row items-center gap-2 rounded-xl bg-secondary p-3 sm:p-4">
                 <Entypo name="plus" size={24} color={'black'} />
               </Pressable>
             </View>
@@ -264,7 +268,9 @@ const StartStudy = () => {
               keyExtractor={(item) => item.id.toString()}
               ListEmptyComponent={() => (
                 <View className="items-center">
-                  <Text className="text-foreground">No members have joined yet.</Text>
+                  <Text className="font-nunito-semibold text-base text-foreground sm:text-lg">
+                    No members have joined yet.
+                  </Text>
                 </View>
               )}
               renderItem={({ item }) => (
@@ -277,32 +283,34 @@ const StartStudy = () => {
                         source={{ uri: item.profiles.avatar_url }}
                       />
                     ) : (
-                      <View className="bg-card size-10 items-center justify-center rounded-full">
-                        <Text className="text-foreground text-base font-medium uppercase">
+                      <View className="size-10 items-center justify-center rounded-full border border-cardborder bg-card sm:size-12">
+                        <Text className="font-nunito-medium text-base uppercase text-foreground sm:text-lg">
                           {item.profiles.username.charAt(0)}
                           {item.profiles.username.charAt(1)}
                         </Text>
                       </View>
                     )}
                   </View>
-                  <Text className="text-foreground">{item.profiles.username}</Text>
+                  <Text className="font-nunito-medium text-base text-foreground sm:text-lg">
+                    {item.profiles.username}
+                  </Text>
                 </View>
               )}
             />
           </View>
-          <View className="flex-1 items-center justify-center gap-5">
+          <View className="flex-1 items-center justify-center gap-5 text-base sm:text-lg">
             {currentGroup?.description && (
-              <Text className="text-foreground text-lg font-medium">
+              <Text className="font-nunito-medium text-lg text-foreground sm:text-xl">
                 {currentGroup?.description}
               </Text>
             )}
 
-            <Pressable onPress={startStudy} className="bg-primary rounded-xl p-4">
-              <Text className="text-lg font-bold">START STUDY</Text>
+            <Pressable onPress={startStudy} className="rounded-xl bg-primary p-4">
+              <Text className="font-nunito-bold text-lg sm:text-xl">START STUDY</Text>
             </Pressable>
-            <Text className="text-foreground">
-              As an admin, you can either start a personal bible study or invite others for a group
-              study.
+            <Text className="font-nunito-medium text-base text-foreground sm:text-lg">
+              As the study leader, you can either start a personal bible study or invite others for
+              a group study.
             </Text>
           </View>
         </View>

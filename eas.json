@@ -13,7 +13,11 @@
     },
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://zpedxamenbsmmiubzwei.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwZWR4YW1lbmJzbW1pdWJ6d2VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMyNzM1ODAsImV4cCI6MjA0ODg0OTU4MH0.KrkMZ2RWSq7eLYi7AhoTxnKF6KPcl8cOWCqFCRmdmBc"
+      }
     },
     "preview": {
       "distribution": "internal"

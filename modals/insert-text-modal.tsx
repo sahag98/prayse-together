@@ -12,6 +12,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { supabase } from '~/utils/supabase';
 import { useAuth } from '~/providers/auth-provider';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { useTheme } from '~/providers/theme-provider';
 
 const InsertTextModal = ({
   channel,
@@ -24,6 +25,7 @@ const InsertTextModal = ({
   visible: boolean;
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const { colorScheme } = useTheme();
   const [note, setNote] = useState('');
 
   const { currentUser } = useAuth();
@@ -74,15 +76,24 @@ const InsertTextModal = ({
             alignItems: 'center',
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
           }}>
-          <View className="w-4/5 items-center gap-4 rounded-xl bg-light-background p-4">
+          <View className="w-11/12 items-center gap-4 rounded-xl bg-card p-4">
             <Pressable onPress={() => setVisible(false)} className="absolute right-2 top-2 p-2">
-              <AntDesign name="close" size={24} color="black" />
+              <AntDesign
+                name="close"
+                size={24}
+                color={colorScheme === 'dark' ? 'white' : 'black'}
+              />
             </Pressable>
-            <Text className="mb-2 text-xl font-semibold">Add Text</Text>
+            <Text className="mb-2 text-xl font-semibold text-foreground sm:text-2xl">
+              Share a Thought
+            </Text>
             <TextInput
               autoFocus
-              className="max-h-52 min-h-32 w-full rounded-lg border p-3 font-medium placeholder:text-gray-500"
-              placeholder="Enter text"
+              className="max-h-52 min-h-32 w-full rounded-lg border border-cardborder bg-input p-3 font-medium text-foreground"
+              placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
+              placeholder="Write your thoughts here..."
+              textAlignVertical="top"
+              selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
               value={note}
               multiline
               numberOfLines={5}
@@ -91,8 +102,8 @@ const InsertTextModal = ({
 
             <Pressable
               onPress={addNoteToStudyNote}
-              className="mt-3 w-full items-center rounded-xl bg-light-primary p-3">
-              <Text className="text-lg font-bold">ADD</Text>
+              className="mt-3 w-full items-center rounded-xl bg-primary p-3">
+              <Text className="text-lg font-bold sm:text-xl">SHARE</Text>
             </Pressable>
           </View>
         </View>

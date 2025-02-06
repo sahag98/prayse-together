@@ -1,19 +1,33 @@
 import AuthProvider from '~/providers/auth-provider';
 import '../global.css';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Slot, Stack, useNavigationContainerRef } from 'expo-router';
+import { Slot } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
 import { isRunningInExpoGo } from 'expo';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { Appearance, ColorSchemeName, Text, useColorScheme, View } from 'react-native';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
-import { DarkTheme, DefaultTheme, Theme, ThemeProvider } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import CustomThemeProvider, { useTheme } from '~/providers/theme-provider';
-import { StatusBar } from 'expo-status-bar';
+// import {
+//   Raleway_300Light,
+//   Raleway_400Regular,
+//   Raleway_500Medium,
+//   Raleway_600SemiBold,
+//   Raleway_700Bold,
+//   useFonts,
+// } from '@expo-google-fonts/raleway';
+
+import {
+  Nunito_300Light,
+  Nunito_400Regular,
+  Nunito_500Medium,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  useFonts,
+} from '@expo-google-fonts/nunito';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,7 +58,13 @@ function Layout() {
 
   const { colorScheme } = useTheme();
 
-  type ThemeOptions = 'light' | 'dark' | 'system';
+  const [loaded, error] = useFonts({
+    Nunito_300Light,
+    Nunito_400Regular,
+    Nunito_500Medium,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+  });
 
   // console.log('color scheme: ', colorScheme);
 
@@ -82,14 +102,13 @@ function Layout() {
     prepare();
   }, []);
 
-  if (!appIsReady) {
+  if (!appIsReady || error) {
     return null;
   }
 
   return (
     <ActionSheetProvider>
       <CustomThemeProvider>
-        {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : CustomDefaultTheme}> */}
         <GestureHandlerRootView>
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
@@ -97,7 +116,6 @@ function Layout() {
             </AuthProvider>
           </QueryClientProvider>
         </GestureHandlerRootView>
-        {/* </ThemeProvider> */}
       </CustomThemeProvider>
     </ActionSheetProvider>
   );

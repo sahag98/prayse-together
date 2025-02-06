@@ -14,6 +14,12 @@ module.exports = {
         input: 'var(--input)',
         input_placeholder: 'var(--input-placeholder)',
       },
+      fontFamily: {
+        'nunito-regular': ['Nunito_400Regular'],
+        'nunito-medium': ['Nunito_500Medium'],
+        'nunito-semibold': ['Nunito_600SemiBold'],
+        'nunito-bold': ['Nunito_700Bold'],
+      },
     },
   },
   plugins: [],

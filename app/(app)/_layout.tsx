@@ -5,7 +5,7 @@ import { Alert } from 'react-native';
 import { useAuth } from '~/providers/auth-provider';
 import * as Notifications from 'expo-notifications';
 import { useNotificationObserver } from '~/hooks/useNotificationObserver';
-import { StatusBar } from 'expo-status-bar';
+
 import { useTheme } from '~/providers/theme-provider';
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -21,6 +21,7 @@ Notifications.setNotificationHandler({
 
 export default function AppIndexLayout() {
   const { currentUser, session } = useAuth();
+
   const { colorScheme } = useTheme();
   useNotificationObserver();
 
@@ -28,8 +29,8 @@ export default function AppIndexLayout() {
   React.useEffect(() => {
     if (!networkState.isConnected && networkState.isInternetReachable === false) {
       Alert.alert(
-        '🔌 You are offline',
-        'You can keep using the app to only do personal bible studies until you get back online.'
+        '📶 Oops! No Internet',
+        'Looks like you’re offline. Please reconnect and try again. We’ll be here when you’re back! 😊'
       );
     }
   }, [networkState.isConnected, networkState.isInternetReachable]);
@@ -50,6 +51,15 @@ export default function AppIndexLayout() {
             sheetAllowedDetents: [0.75, 1],
             sheetGrabberVisible: true,
             headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="emoji-picker"
+          options={{
+            presentation: 'formSheet',
+            headerShown: false,
+            sheetAllowedDetents: [0.5, 0.75, 1],
+            sheetGrabberVisible: true,
           }}
         />
       </Stack>

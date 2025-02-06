@@ -51,7 +51,9 @@ const SeriesPage = () => {
               }}>
               <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
             </Pressable>
-            <Text className="text-3xl font-bold text-foreground">{params.title}</Text>
+            <Text className="font-nunito-bold text-3xl text-foreground sm:text-4xl">
+              {params.title}
+            </Text>
           </View>
         </View>
         <FlatList
@@ -73,12 +75,16 @@ const SeriesPage = () => {
                 style={{ objectFit: 'cover', width: '100%', aspectRatio: 16 / 9 }}
               />
               <View className="flex-row items-center justify-between">
-                <Text className="flex-1 text-2xl font-bold text-foreground">{item.title}</Text>
+                <Text className="flex-1 font-nunito-bold text-2xl text-foreground sm:text-3xl">
+                  {item.title}
+                </Text>
                 {!!studiedPlans.find((data) => data === item.slug) && (
                   <AntDesign name="checkcircle" size={24} color="green" />
                 )}
               </View>
-              <Text className="font-medium leading-6 text-foreground">{item.excerpt}</Text>
+              <Text className="font-nunito-medium text-base leading-6 text-foreground sm:text-lg">
+                {item.excerpt}
+              </Text>
               <Pressable
                 onPress={() =>
                   router.push(
@@ -91,9 +97,11 @@ const SeriesPage = () => {
                     : 'mt-3 w-full items-center justify-center rounded-lg bg-primary p-4'
                 }>
                 {!!studiedPlans.find((data) => data === item.slug) ? (
-                  <Text className="font-bold underline">Do it Again</Text>
+                  <Text className="font-nunito-bold text-base underline sm:text-lg">
+                    Do it Again
+                  </Text>
                 ) : (
-                  <Text className="text-base font-bold">Start Lesson</Text>
+                  <Text className="font-nunito-bold text-base sm:text-lg">Start Lesson</Text>
                 )}
               </Pressable>
             </View>

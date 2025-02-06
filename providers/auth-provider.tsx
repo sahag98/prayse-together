@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Database, Tables } from '~/database.types';
+import { useUserStore } from '~/store/store';
 import { GroupMembers } from '~/types/types';
 
 import { supabase } from '~/utils/supabase';
@@ -31,6 +32,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [userGroups, setUserGroups] = useState<GroupMembers[] | null>(null);
   const [isReady, setIsReady] = useState(false);
   const queryClient = useQueryClient();
+
+  const { fetchStudies } = useUserStore();
   const getGoogleOAuthUrl = async () => {
     const result = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -130,6 +133,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         { event: '*', schema: 'public', table: 'group_members' },
         (payload) => {
           console.log('NEW MEMBER payload: ', payload.new);
+          // fetchStudies(currentUser?.id!);
           queryClient.invalidateQueries({ queryKey: ['groups'] });
           const newMember = payload.new;
           // getGroupMembers(newMember.group_id);

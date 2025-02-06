@@ -35,9 +35,10 @@ const SeriePage = () => {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta name="description" content="A seven-lesson course introducing the fundamentals of Christianity, covering belief in God, the Bible, Jesus Christ, salvation, and Christian living.">
+            <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700&display=swap" rel="stylesheet">
             <style>
             body {
-              font-family: 'Roboto', sans-serif;
+              font-family: 'Nunito', sans-serif;
               font-size: 18px;
             }
             </style>
@@ -66,7 +67,9 @@ const SeriePage = () => {
             }}>
             <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
           </Pressable>
-          <Text className="text-foreground flex-1 text-3xl font-bold">{name}</Text>
+          <Text className="flex-1 font-nunito-bold text-3xl text-foreground sm:text-4xl">
+            {name}
+          </Text>
         </View>
       </View>
       {/* <RenderHTML contentWidth={width} source={{ html: `${htmlContent}` }} /> */}
@@ -100,11 +103,15 @@ const SeriePage = () => {
         }}
         className={
           isFinished
-            ? 'bg-primary w-full items-center justify-center self-center p-4'
-            : 'w-full items-center justify-center self-center bg-gray-200 p-4'
+            ? ' mt-5 w-full items-center justify-center self-center bg-primary p-4'
+            : ' mt-5 w-full items-center justify-center self-center bg-card p-4'
         }>
         <Text
-          className={isFinished ? 'text-lg font-semibold' : 'text-lg font-semibold text-gray-400'}>
+          className={
+            isFinished
+              ? 'font-nunito-semibold text-lg sm:text-xl'
+              : 'font-nunito-semibold text-lg text-gray-400 sm:text-xl'
+          }>
           Finish
         </Text>
       </Pressable>

@@ -20,7 +20,9 @@ import JoinGroupModal from '~/modals/join-group';
 import { GroupMembers, Note } from '~/types/types';
 import { useUserStore } from '~/store/store';
 import uuid from 'react-native-uuid';
+import { useTheme } from '~/providers/theme-provider';
 const EndScreen = () => {
+  const { colorScheme } = useTheme();
   const { currentUser } = useAuth();
   const { saveNotes } = useUserStore();
   const { id } = useLocalSearchParams();
@@ -108,21 +110,25 @@ const EndScreen = () => {
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-1">
             <Pressable onPress={endStudy}>
-              <AntDesign name="left" size={24} color="black" />
+              <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
             </Pressable>
           </View>
         </View>
         <View className="flex-1 items-center justify-center gap-1">
-          <Entypo name="open-book" size={80} color="black" />
-          <Text className="text-xl font-semibold">The study has ended.</Text>
+          <Entypo name="open-book" size={80} color={colorScheme === 'dark' ? 'white' : 'black'} />
+          <Text className="font-nunito-semibold text-xl text-foreground sm:text-2xl">
+            The study has ended.
+          </Text>
           {groupNotes && groupNotes?.length > 0 && !hasAlreadySaved && (
-            <Pressable onPress={saveStudyNotes} className="mt-4 rounded-xl bg-light-primary p-4">
-              <Text className="text-lg font-bold">Save Study Notes</Text>
+            <Pressable onPress={saveStudyNotes} className="mt-4 rounded-xl bg-primary p-4">
+              <Text className="font-nunito-bold text-lg sm:text-xl">Save Study Notes</Text>
             </Pressable>
           )}
 
           <Pressable onPress={endStudy} className="mt-10 rounded-xl  p-4">
-            <Text className="text-sm font-semibold underline">Back to Home</Text>
+            <Text className="font-nunito-semibold text-sm text-foreground underline sm:text-lg">
+              Back to Home
+            </Text>
           </Pressable>
         </View>
       </View>

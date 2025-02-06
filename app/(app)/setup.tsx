@@ -29,8 +29,11 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { AntDesign } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { registerForPushNotificationsAsync } from '~/utils/registerNotification';
+import { useTheme } from '~/providers/theme-provider';
 
 export default function Setup() {
+  const { colorScheme } = useTheme();
+
   const { currentUser, setCurrentUser } = useAuth();
   const [step, setStep] = useState({ counter: 1, title: 'User Information' });
   const screenWidth = Dimensions.get('window').width;
@@ -227,7 +230,7 @@ export default function Setup() {
 
   return (
     <>
-      <SafeAreaView edges={['top']} className="flex-1">
+      <SafeAreaView edges={['top']} className="flex-1 bg-background">
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -235,17 +238,19 @@ export default function Setup() {
             {/* Progress Bar */}
             <View className="gap-2 px-6">
               <View className="flex-row items-center gap-1">
-                <Text className="font-medium">{step.counter}/2:</Text>
-                <Text className="font-medium">{step.title}</Text>
+                <Text className="font-nunito-medium text-foreground">{step.counter}/2:</Text>
+                <Text className="font-nunito-medium text-foreground">{step.title}</Text>
               </View>
-              <View className="h-3 w-full rounded-lg bg-gray-200">
+              <View className="h-3 w-full rounded-lg bg-card">
                 <Animated.View
-                  className="bg-light-primary"
+                  className="bg-primary"
                   style={[{ height: '100%', borderRadius: 5 }, progressBarStyle]}
                 />
               </View>
             </View>
-            <Text className="mt-5 px-6 text-2xl font-bold">Hey! Let's setup your app 👋</Text>
+            <Text className="mt-5 px-6 font-nunito-bold text-2xl text-foreground">
+              Hey! Let's setup your app 👋
+            </Text>
             <View className="flex-1 justify-center gap-4">
               <Animated.View
                 style={[animatedStyle, { width: screenWidth * 2, flexDirection: 'row' }]}>
@@ -262,13 +267,17 @@ export default function Setup() {
                       ) : (
                         <Pressable
                           onPress={uploadAvatar}
-                          className="size-40 items-center justify-center gap-3 self-center rounded-full bg-gray-200 p-2">
+                          className="size-40 items-center justify-center gap-3 self-center rounded-full border border-cardborder bg-card p-2">
                           {uploading ? (
                             <ActivityIndicator />
                           ) : (
                             <>
-                              <Feather name="upload" size={40} color="black" />
-                              <Text className="w-4/5 text-center text-sm leading-4">
+                              <Feather
+                                name="upload"
+                                size={40}
+                                color={colorScheme === 'dark' ? 'white' : 'black'}
+                              />
+                              <Text className="w-4/5 text-center font-nunito-medium text-sm leading-4 text-foreground">
                                 Upload profile image
                               </Text>
                             </>
@@ -279,15 +288,17 @@ export default function Setup() {
                       <TextInput
                         value={username}
                         onChangeText={setUsername}
+                        selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
                         placeholder="Enter your username"
-                        className="rounded-3xl bg-gray-200 p-4 placeholder:text-light-foreground/60"
+                        placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
+                        className="rounded-3xl bg-input p-4 text-foreground"
                         //   style={{ borderWidth: 1, padding: 10, marginVertical: 10 }}
                       />
                       <Pressable
                         disabled={!username || username.length <= 2}
-                        className="items-center justify-center rounded-3xl bg-light-primary p-4 disabled:bg-light-primary/50"
+                        className="disabled:bg-light-primary/50 items-center justify-center rounded-3xl bg-primary p-4"
                         onPress={handleNextStep}>
-                        <Text className="text-base font-semibold">Next</Text>
+                        <Text className="font-nunito-bold text-base">Next</Text>
                       </Pressable>
                     </>
                   )}
@@ -298,24 +309,26 @@ export default function Setup() {
                     <>
                       {studyType === 'group' && (
                         <Pressable
-                          className="items-center justify-center gap-3 rounded-3xl border border-dashed bg-light-primary p-6"
+                          className="items-center justify-center gap-3 rounded-3xl border border-dashed bg-primary p-6"
                           onPress={handlePresentModalPress}>
                           <AntDesign name="plus" size={40} color="black" />
-                          <Text className="text-base font-semibold">Create study group</Text>
+                          <Text className="font-nunito-semibold text-base">Create study group</Text>
                         </Pressable>
                       )}
                       <View className="mt-5 gap-3">
                         <Pressable
-                          className="items-center justify-center rounded-3xl bg-gray-200 p-4"
+                          className="items-center justify-center rounded-3xl bg-card p-4"
                           onPress={handlePreviousStep}>
-                          <Text className="text-base font-semibold">Back</Text>
+                          <Text className="font-nunito-semibold text-base text-foreground">
+                            Back
+                          </Text>
                         </Pressable>
                       </View>
 
                       <Pressable
                         className="mt-5 items-center justify-center rounded-3xl  p-4"
                         onPress={updateProfile}>
-                        <Text className="text- font-semibold underline">Skip</Text>
+                        <Text className="font-semibold text-foreground underline">Skip</Text>
                       </Pressable>
                     </>
                   )}

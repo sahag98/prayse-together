@@ -1,7 +1,7 @@
 import {
   Alert,
   FlatList,
-  Image,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -20,8 +20,15 @@ import studyCompletion from '~/assets/study-completion.png';
 import lessonCompletion from '~/assets/lesson-completion.png';
 import { supabase } from '~/utils/supabase';
 import { useUserStore } from '~/store/store';
+import Feather from '@expo/vector-icons/Feather';
+import { Image } from 'expo-image';
+import { useTheme } from '~/providers/theme-provider';
+
+const blurhash = 'L1QvwR-;fQ-;~qfQfQfQfQfQfQfQ';
 
 const ProfilePage = () => {
+  const { colorScheme } = useTheme();
+
   const { currentUser, setCurrentUser } = useAuth();
   const { studiedPlans } = useUserStore();
 
@@ -54,7 +61,7 @@ const ProfilePage = () => {
             onPress={() => {
               router.back();
             }}>
-            <AntDesign name="left" size={24} color="black" />
+            <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
           </Pressable>
         )}
         <View className="mt-8 flex-row items-center gap-4">
@@ -63,18 +70,23 @@ const ProfilePage = () => {
               style={{ width: 80, aspectRatio: 1 / 1 }}
               className="rounded-full"
               source={{ uri: currentUser.avatar_url }}
+              placeholder={{ blurhash }}
+              contentFit="cover"
+              transition={1000}
             />
           ) : (
-            <View className="bg-light-secondary size-28 items-center justify-center rounded-full ">
-              <Text className="text-foreground text-3xl font-semibold uppercase">
+            <View className="size-28 items-center justify-center rounded-full border border-cardborder bg-card ">
+              <Text className="font-nunito-semibold text-3xl uppercase text-foreground">
                 {currentUser?.username?.charAt(0)}
                 {currentUser?.username?.charAt(1)}
               </Text>
             </View>
           )}
           <View className="gap-1">
-            <Text className="text-foreground text-2xl font-semibold">{currentUser?.username}</Text>
-            <Text className="text-foreground font-medium">
+            <Text className="font-nunito-semibold text-2xl text-foreground">
+              {currentUser?.username}
+            </Text>
+            <Text className="font-nunito-medium text-foreground">
               Joined: {currentUser && new Date(currentUser.created_at).toDateString()}
             </Text>
           </View>
@@ -102,28 +114,61 @@ const ProfilePage = () => {
               </View>
             </View> */}
         </View>
-        <View className="bg-card border-cardborder items-center justify-center gap-2 rounded-2xl border p-4">
-          <Text className="text-foreground text-xl font-bold">Bible Study By Prayse</Text>
-          <Text className="text-foreground">v.1.0.0</Text>
+        <View className="items-center justify-center gap-2 rounded-2xl border border-cardborder bg-card p-4">
+          <Text className="font-nunito-bold text-xl text-foreground">Bible Study By Prayse</Text>
+          <Text className="font-nunito-medium text-foreground">v.1.0.0</Text>
         </View>
-        <View className="bg-card border-cardborder justify-center gap-1  rounded-2xl border p-4">
-          <Text className="text-foreground text-center">App Theme Verse</Text>
-          <Text className="text-foreground text-lg font-semibold">2 Timothy 2:15</Text>
-          <Text className="text-foreground">
+        <View className="justify-center gap-1 rounded-2xl border  border-cardborder bg-card p-4">
+          <Text className="text-center font-nunito-semibold text-foreground">App Theme Verse</Text>
+          <Text className="text-lg font-semibold text-foreground">2 Timothy 2:15</Text>
+          <Text className="font-nunito-medium text-foreground">
             Be diligent to present yourself approved to God, a worker who does not need to be
             ashamed, rightly dividing the word of truth.
           </Text>
         </View>
-        <Text className="text-foreground text-lg font-medium">Check out our prayer list app</Text>
-        <View className="mb-10 mt-auto gap-3">
+        <View className="gap-3">
+          <Text className="font-nunito-bold text-xl text-foreground">
+            Check out our prayer list app:
+          </Text>
+          <Pressable
+            onPress={() => {
+              if (Platform.OS === 'ios') {
+                Linking.openURL('https://apps.apple.com/us/app/prayse-prayer-journal/id6443480347');
+              } else {
+                Linking.openURL(
+                  'https://play.google.com/store/apps/details?id=com.sahag98.prayerListApp&hl=en_US&gl=US'
+                );
+              }
+            }}
+            className="flex-row items-center gap-4 rounded-2xl border border-cardborder bg-card p-4">
+            <Image
+              style={{ width: 60, aspectRatio: 1 / 1, borderRadius: 10 }}
+              className="rounded-full"
+              source={require('~/assets/prayse-logo.png')}
+              placeholder={{ blurhash }}
+              contentFit="cover"
+              transition={1000}
+            />
+            <Text className="font-nunito-bold text-xl text-foreground">Prayse</Text>
+            <Feather
+              name="external-link"
+              size={24}
+              className="ml-auto"
+              color={colorScheme === 'dark' ? 'white' : 'black'}
+            />
+          </Pressable>
+        </View>
+        <View className="mb-20 mt-auto gap-3">
           <Pressable
             onPress={() => {
               supabase.auth.signOut();
               setCurrentUser(null);
               // router.push('/(auth)');
             }}
-            className="w-full items-center justify-center rounded-xl bg-red-100 p-4">
-            <Text className="text-base font-semibold text-red-600">Sign out</Text>
+            className="w-full items-center justify-center rounded-xl bg-red-100 p-4 dark:bg-red-950">
+            <Text className="font-nunito-semibold text-base text-red-600 dark:text-foreground">
+              Sign out
+            </Text>
           </Pressable>
           <Pressable
             onPress={() =>
@@ -136,8 +181,8 @@ const ProfilePage = () => {
                 { text: 'Delete', style: 'destructive', onPress: deleteAccount },
               ])
             }
-            className=" w-full items-center justify-center rounded-xl bg-gray-600 p-4">
-            <Text className="text-base font-semibold text-white">Delete account</Text>
+            className=" w-full items-center justify-center rounded-xl bg-card p-4">
+            <Text className="font-nunito-semibold text-base text-foreground">Delete account</Text>
           </Pressable>
         </View>
       </View>

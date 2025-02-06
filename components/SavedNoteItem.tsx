@@ -1,16 +1,17 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useState } from 'react';
 import { note, useUserStore } from '~/store/store';
-import { AntDesign, FontAwesome6 } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 import { useAccordion } from '~/hooks';
 import Animated, {
-  runOnUI,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { useTheme } from '~/providers/theme-provider';
+import * as Print from 'expo-print';
 
 function AccordionItem({ isExpanded, children, viewKey, style, duration = 500 }: any) {
   const height = useSharedValue(0);
@@ -38,6 +39,7 @@ function AccordionItem({ isExpanded, children, viewKey, style, duration = 500 }:
 }
 
 const SavedNoteItem = ({ item }: { item: note }) => {
+  const { colorScheme } = useTheme();
   const { setHeight, animateHeightStyle, animateRef, isOpened } = useAccordion();
   const { removeNote } = useUserStore();
   const animatedChevronStyle = useAnimatedStyle(() => ({
@@ -49,6 +51,40 @@ const SavedNoteItem = ({ item }: { item: note }) => {
       },
     ],
   }));
+
+  const handlePrint = async () => {
+    const notesHtml = item.data
+      .map(
+        (note) => `
+        <div style="margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #ddd;">
+          ${note.reference ? `<h3>${note.reference}</h3>` : ''}
+          <p>${note.note}</p>
+          <small>By: ${note.profiles?.username || 'Unknown'}</small>
+        </div>`
+      )
+      .join('');
+
+    const htmlContent = `
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>${item.groupName}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { text-align: center; }
+          h3 {text-align:center; }
+          div { margin-bottom: 15px; }
+        </style>
+      </head>
+      <body>
+        <h1>${item.groupName}</h1>
+        <h3>${item.creationDate}</h3>
+        ${notesHtml}
+      </body>
+    </html>`;
+
+    await Print.printAsync({ html: htmlContent });
+  };
 
   function deleteNote() {
     console.log('deleting');
@@ -87,11 +123,17 @@ const SavedNoteItem = ({ item }: { item: note }) => {
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
   return (
-    <Pressable onPress={() => onPress(item.id)} className=" rounded-xl bg-gray-200 p-4">
-      <View className="flex-row items-center justify-between">
+    <Pressable
+      onPress={() => onPress(item.id)}
+      className=" rounded-2xl border border-cardborder bg-card p-4">
+      <View className="mb-4 flex-row items-center justify-between">
         <View className="gap-1">
-          <Text className="text-sm font-medium italic">{item.creationDate}</Text>
-          <Text className="text-xl font-semibold">{item.groupName}</Text>
+          <Text className="text-sm font-medium italic text-foreground sm:text-lg">
+            {item.creationDate}
+          </Text>
+          <Text className="text-xl font-semibold text-foreground sm:text-2xl">
+            {item.groupName}
+          </Text>
           {/* {selectedId === item.id ? (
                       <Text className="text-xl font-semibold">{selectedId}</Text>
                     ) : null} */}
@@ -99,17 +141,23 @@ const SavedNoteItem = ({ item }: { item: note }) => {
           {/* <Text className="text-xl font-semibold">{item.id}</Text> */}
         </View>
         <Animated.View style={iconStyle}>
-          <AntDesign name="down" size={20} color="black" />
+          <AntDesign name="down" size={20} color={colorScheme === 'dark' ? 'white' : 'black'} />
         </Animated.View>
       </View>
       <AccordionItem isExpanded={open} viewKey="Accordion">
         {item.data.map((note) => (
           <View key={note.id}>
             {note.reference ? (
-              <View className="gap-1 rounded-lg border border-gray-300 bg-light-primary/15 p-3">
-                <Text className="text-base font-medium">{note.reference}</Text>
-                <Text className="text-base">{note.note}</Text>
-                <Text className="self-end text-sm text-gray-500">by {note.profiles.username}</Text>
+              <View className="gap-1 rounded-lg border border-cardborder bg-card p-3">
+                <Text className="font-nunito-medium text-base text-foreground">
+                  {note.reference}
+                </Text>
+                <Text className="font-nunito-medium text-base text-foreground sm:text-lg">
+                  {note.note}
+                </Text>
+                <Text className="self-end font-nunito-regular text-sm text-foreground sm:text-base ">
+                  by {note.profiles.username}
+                </Text>
               </View>
             ) : (
               <View className="flex-row items-center gap-3 rounded-lg p-3">
@@ -120,8 +168,8 @@ const SavedNoteItem = ({ item }: { item: note }) => {
                       source={{ uri: note.profiles.avatar_url }}
                     />
                   ) : (
-                    <View className="size-8 items-center justify-center rounded-full bg-gray-300">
-                      <Text className="text-sm font-medium uppercase">
+                    <View className="size-8 items-center justify-center rounded-full border border-cardborder bg-card sm:size-12">
+                      <Text className="font-nunito-medium text-sm uppercase text-foreground sm:text-lg">
                         {note.profiles.username.charAt(0)}
                         {note.profiles.username.charAt(1)}
                       </Text>
@@ -129,7 +177,9 @@ const SavedNoteItem = ({ item }: { item: note }) => {
                   )}
                 </View>
                 <View className="flex-1">
-                  <Text className="text-base">{note.note}</Text>
+                  <Text className="font-nunito-medium text-base text-foreground sm:text-lg">
+                    {note.note}
+                  </Text>
                   {/* <Text className="mt-1 text-sm text-gray-500">
                               by {note.profiles.username}
                             </Text> */}
@@ -139,9 +189,19 @@ const SavedNoteItem = ({ item }: { item: note }) => {
           </View>
         ))}
       </AccordionItem>
-      <Text onPress={deleteNote} className="mt-3 text-sm font-medium text-red-500">
-        Delete
-      </Text>
+      <View className="flex-row items-center justify-between">
+        <Text
+          onPress={deleteNote}
+          className="mt-3 font-nunito-semibold text-base text-red-500 sm:text-lg">
+          Delete
+        </Text>
+
+        <Text
+          onPress={handlePrint}
+          className="mt-3 font-nunito-semibold text-base text-blue-500 sm:text-lg">
+          Print
+        </Text>
+      </View>
     </Pressable>
   );
 };

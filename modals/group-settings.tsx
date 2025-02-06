@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { GroupMembers } from '~/types/types';
 import { useAuth } from '~/providers/auth-provider';
 import { useTheme } from '~/providers/theme-provider';
+import { useUserStore } from '~/store/store';
 const GroupSettingsModal = ({
   group_id,
   created,
@@ -23,6 +24,7 @@ const GroupSettingsModal = ({
 }) => {
   const { currentUser } = useAuth();
   const { colorScheme } = useTheme();
+  const { removeStudy } = useUserStore();
   // ref
   const snapPoints = useMemo(() => ['30%'], []);
   // callbacks
@@ -36,17 +38,19 @@ const GroupSettingsModal = ({
   async function deleteStudy() {
     console.log('deleting');
 
-    if (!group_id) return;
+    if (!group_id || !currentUser) return;
 
-    if (currentUser?.id === admin.user_id) {
-      await supabase.from('study_group').delete().eq('id', group_id);
-    } else {
-      await supabase
-        .from('group_members')
-        .delete()
-        .eq('user_id', currentUser?.id!)
-        .eq('group_id', group_id);
-    }
+    removeStudy(currentUser?.id, admin.user_id, String(group_id));
+
+    // if (currentUser?.id === admin.user_id) {
+    //   await supabase.from('study_group').delete().eq('id', group_id);
+    // } else {
+    //   await supabase
+    //     .from('group_members')
+    //     .delete()
+    //     .eq('user_id', currentUser?.id!)
+    //     .eq('group_id', group_id);
+    // }
 
     bottomSheetModalRef.current?.dismiss();
     router.back();
@@ -81,20 +85,24 @@ const GroupSettingsModal = ({
                 size={24}
                 color={colorScheme === 'dark' ? 'white' : 'black'}
               />
-              <Text className="text-foreground text-2xl font-bold">Bible Study Info</Text>
+              <Text className="font-nunito-bold text-2xl text-foreground sm:text-3xl">
+                Bible Study Info
+              </Text>
             </View>
             <View className="gap-3">
               <View className="flex-row items-center gap-3">
                 <AntDesign name="calendar" size={24} color="#858484" />
-                <Text className="text-foreground text-lg">
+                <Text className="font-nunito-medium text-lg text-foreground sm:text-xl">
                   Created:{' '}
-                  <Text className="text-foreground">{new Date(created).toDateString()}</Text>
+                  <Text className="text-base text-foreground sm:text-lg">
+                    {new Date(created).toDateString()}
+                  </Text>
                 </Text>
               </View>
               <View className="flex-row items-center gap-3">
                 <FontAwesome5 name="user-circle" size={24} color="#858484" />
-                <Text className="text-foreground text-lg">
-                  Admin: <Text className="text-foreground">{admin.profiles.username}</Text>
+                <Text className="font-nunito-medium text-lg text-foreground sm:text-xl">
+                  Study Leader: <Text className="text-foreground">{admin.profiles.username}</Text>
                 </Text>
               </View>
             </View>
@@ -114,8 +122,8 @@ const GroupSettingsModal = ({
                     ]
                   );
                 }}
-                className="border-cardborder mt-auto flex-row items-center justify-between rounded-xl border p-4">
-                <Text className="text-lg font-semibold text-red-500">Delete</Text>
+                className="mt-auto flex-row items-center justify-between rounded-xl border border-cardborder p-4">
+                <Text className="font-nunito-semibold text-lg text-red-500 sm:text-xl">Delete</Text>
                 <FontAwesome6 name="trash-alt" size={25} color="#ff4d4d" />
               </Pressable>
             ) : (
@@ -135,7 +143,7 @@ const GroupSettingsModal = ({
                   );
                 }}
                 className="mt-auto flex-row items-center justify-between rounded-xl bg-red-100 p-4">
-                <Text className="text-lg font-semibold text-red-600">Leave</Text>
+                <Text className="text-lg font-semibold text-red-600 sm:text-xl">Leave</Text>
                 <Entypo name="log-out" size={25} color="#ff4d4d" />
               </Pressable>
             )}

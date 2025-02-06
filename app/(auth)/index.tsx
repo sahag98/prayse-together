@@ -6,9 +6,10 @@ import { supabase } from '~/utils/supabase';
 import { useAuth } from '~/providers/auth-provider';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
+import { useTheme } from '~/providers/theme-provider';
 export default function Login() {
   const { getGoogleOAuthUrl, currentUser, setCurrentUser } = useAuth();
-
+  const { colorScheme } = useTheme();
   const onSignInWithApple = async () => {
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -113,27 +114,28 @@ export default function Login() {
               source={require('../../assets/prayse-together-logo.png')}
               width={600}
               height={600}
-              className="size-64 self-center"
+              style={{ tintColor: colorScheme === 'dark' ? 'white' : 'black' }}
+              className="size-64 self-center sm:size-96"
             />
-            <Text className="text-3xl font-bold text-foreground">
+            <Text className="font-nunito-bold text-3xl text-foreground sm:text-4xl">
               Welcome to Bible Study by Prayse
             </Text>
-            <Text className="text-lg text-foreground">
+            <Text className="font-nunito-medium text-lg text-foreground sm:text-xl">
               Your guide to exploring the Bible and growing in faith alongside others.
             </Text>
           </View>
           <View className="mt-5 gap-3">
             <Pressable
               onPress={onSignInWithGoogle}
-              className="flex-row items-center justify-center gap-2 rounded-3xl bg-primary p-4">
+              className="flex-row items-center justify-center gap-2 rounded-3xl bg-primary p-4 sm:p-5">
               <AntDesign name="google" size={24} color="black" />
-              <Text className="text-lg font-semibold">Continue with Google</Text>
+              <Text className="font-nunito-bold text-lg sm:text-xl">Continue with Google</Text>
             </Pressable>
             <Pressable
               onPress={onSignInWithApple}
-              className="flex-row items-center justify-center gap-2 rounded-3xl bg-primary p-4">
+              className="flex-row items-center justify-center gap-2 rounded-3xl bg-primary p-4 sm:p-5">
               <AntDesign name="apple-o" size={24} color="black" />
-              <Text className="text-lg font-semibold">Continue with Apple</Text>
+              <Text className="font-nunito-bold text-lg sm:text-xl">Continue with Apple</Text>
             </Pressable>
           </View>
         </View>

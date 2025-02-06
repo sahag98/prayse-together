@@ -4,64 +4,75 @@ import { Feather } from '@expo/vector-icons';
 import { Note } from '~/types/types';
 import { formatDistance, subDays } from 'date-fns';
 import { Image } from 'expo-image';
+import { useTheme } from '~/providers/theme-provider';
 
 const blurhash = 'L1QvwR-;fQ-;~qfQfQfQfQfQfQfQ';
 const NoteItem = ({ item }: { item: Note }) => {
+  const { colorScheme } = useTheme();
   return (
     <View
       className={
         item.reference
-          ? 'gap-1 rounded-md border border-gray-300 bg-light-primary/5 p-3'
+          ? 'gap-1 rounded-2xl border border-cardborder bg-card p-3'
           : 'flex-row items-start'
       }>
       <View className="mb-0 flex-1 flex-row items-center justify-between">
-        {item.reference && <Text className=" text-lg font-semibold">{item.reference}</Text>}
+        {item.reference && (
+          <Text className=" font-nunito-semibold text-lg text-foreground sm:text-xl">
+            {item.reference}
+          </Text>
+        )}
         <View
           className={
             item.reference ? 'flex-row items-center gap-2' : 'flex-row items-center gap-2'
           }>
           {item.reference && (
-            <Text className={item.reference ? 'text-sm' : 'text-lg font-semibold'}>
+            <Text
+              className={
+                item.reference
+                  ? 'font-nunito-medium text-sm text-foreground sm:text-base'
+                  : 'font-nunito-medium text-lg font-semibold sm:text-xl'
+              }>
               {item.reference && 'by'} {item.profiles.username}
             </Text>
           )}
-
-          {/* <View className="flex-row items-center gap-2 self-end">
-            {item.profiles?.avatar_url ? (
-              <Image source={{ uri: item.profiles.avatar_url }} />
-            ) : (
-              <View className="size-10 items-center justify-center rounded-full bg-gray-200">
-                <Text className="text-base font-medium uppercase">
-                  {item.profiles.username.charAt(0)}
-                  {item.profiles.username.charAt(1)}
-                </Text>
-              </View>
-            )}
-          </View> */}
         </View>
       </View>
-      <View className="w-full gap-2">
+      <View className="w-full gap-2 ">
         {!item.reference ? (
           <View className="flex-1 flex-row items-start justify-between gap-3">
-            <Image
-              source={{ uri: item.profiles.avatar_url }}
-              style={{ width: 35, height: 35, borderRadius: 100 }}
-              placeholder={{ blurhash }}
-              contentFit="cover"
-              transition={1000}
-            />
+            {item.profiles.avatar_url ? (
+              <Image
+                source={{ uri: item.profiles.avatar_url }}
+                style={{ width: 35, height: 35, borderRadius: 100 }}
+                placeholder={{ blurhash }}
+                contentFit="cover"
+                transition={1000}
+              />
+            ) : (
+              <View className="rounded-full border border-cardborder bg-card p-2">
+                <Feather name="user" size={25} color={colorScheme === 'dark' ? 'white' : 'black'} />
+              </View>
+            )}
+
             <View className="flex-1 gap-1">
               <View className="w-full flex-row items-center justify-between">
-                <Text className="text-lg font-medium">{item.profiles.username}</Text>
-                <Text className="text-xs">
+                <Text className="font-nunito-medium text-lg text-foreground sm:text-xl">
+                  {item.profiles.username}
+                </Text>
+                <Text className="font-nunito-regular text-xs text-foreground sm:text-base">
                   {formatDistance(new Date(item.created_at), new Date(), { addSuffix: true })}
                 </Text>
               </View>
-              <Text className="flex-1">{item.note}</Text>
+              <Text className="flex-1 font-nunito-medium text-base text-foreground sm:text-lg">
+                {item.note}
+              </Text>
             </View>
           </View>
         ) : (
-          <Text className="flex-1">{item.note}</Text>
+          <Text className="flex-1 font-nunito-medium text-base text-foreground sm:text-lg">
+            {item.note}
+          </Text>
         )}
       </View>
     </View>

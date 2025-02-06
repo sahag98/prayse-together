@@ -5,7 +5,7 @@ import { Container } from '~/components/Container';
 import { supabase } from '~/utils/supabase';
 import { Tables } from '~/database.types';
 
-import { AntDesign, Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '~/providers/auth-provider';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import JoinGroupModal from '~/modals/join-group';
@@ -64,7 +64,7 @@ const GroupPage = () => {
   async function endBibleStudy() {
     const { data, error } = await supabase
       .from('study_group')
-      .update({ has_started: false })
+      .update({ has_started: false, lesson_title: '' })
       .eq('id', id)
       .select();
   }
@@ -74,6 +74,12 @@ const GroupPage = () => {
       const { data, error } = await supabase
         .from('study_group')
         .update({ lesson_title: lessonTitle })
+        .eq('id', id)
+        .select();
+    } else {
+      const { data, error } = await supabase
+        .from('study_group')
+        .update({ lesson_title: 'Title' })
         .eq('id', id)
         .select();
     }
@@ -191,8 +197,12 @@ const GroupPage = () => {
         (payload) => {
           console.log('new!!');
           if (payload.eventType === 'UPDATE') {
-            if (payload.new.study_title) {
+            if (payload.new.lesson_title) {
               console.log('NEW TITLE!!!');
+              setCurrentGroup((prev: any) => ({
+                ...prev,
+                lesson_title: payload.new.lesson_title,
+              }));
             }
             if (payload.new.has_started === true) {
               console.log('STUDY IS STARTING: ', payload.new);
@@ -206,6 +216,7 @@ const GroupPage = () => {
               setCurrentGroup((prev: any) => ({
                 ...prev,
                 has_started: false,
+                lesson_title: null,
               }));
               router.push(`/group/${id}/end`);
             }
@@ -266,7 +277,9 @@ const GroupPage = () => {
                   color={colorScheme === 'dark' ? 'white' : 'black'}
                 />
               </Pressable>
-              <Text className="text-foreground text-3xl font-bold">{currentGroup?.name}</Text>
+              <Text className="font-nunito-bold text-3xl text-foreground sm:text-4xl">
+                {currentGroup?.name}
+              </Text>
             </View>
             <Pressable onPress={handlePresentGroupSettingsModalPress} className="">
               <Entypo
@@ -283,8 +296,8 @@ const GroupPage = () => {
               size={70}
               color="#FFD700"
             />
-            <Text className="text-foreground w-4/5 text-center font-medium">
-              Please wait for the admin to start the study.
+            <Text className="w-3/4 text-center font-nunito-medium text-base text-foreground sm:text-lg">
+              Please wait for the study leader to start the study.
             </Text>
           </View>
         </View>
@@ -301,6 +314,10 @@ const GroupPage = () => {
     );
   }
 
+  const handleChangeText = (text: string) => {
+    setLessonTitle(text); // Ensure this doesn't trigger unnecessary re-renders
+  };
+
   return (
     <Container>
       <View className="flex-1">
@@ -316,13 +333,12 @@ const GroupPage = () => {
               }}>
               <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
             </Pressable>
-            <Text className="text-foreground text-3xl font-bold">{currentGroup?.name}</Text>
+            <Text className="font-nunito-bold text-3xl text-foreground sm:text-4xl">
+              {currentGroup?.name}
+            </Text>
           </View>
           {currentGroup.has_started && currentUser?.id === currentGroup.admin_id && (
             <>
-              <Pressable onPress={handlePresentJoinModalPress} className="p-2">
-                <AntDesign name="addusergroup" size={30} color="black" />
-              </Pressable>
               <Pressable
                 onPress={() =>
                   Alert.alert(
@@ -339,7 +355,7 @@ const GroupPage = () => {
                   )
                 }
                 className="rounded-xl border border-red-400 bg-red-100 px-4 py-2">
-                <Text className="text-lg font-bold text-red-500">END</Text>
+                <Text className="font-nunito-bold text-lg text-red-500 sm:text-xl">END</Text>
               </Pressable>
             </>
           )}
@@ -349,8 +365,8 @@ const GroupPage = () => {
             <Pressable
               onPress={() => setShowDropdown((prev) => !prev)}
               className="absolute top-5 z-10 w-full">
-              <View className="bg-card border-cardborder flex-row items-center justify-between rounded-xl border p-3">
-                <Text className="text-foreground font-medium">
+              <View className="flex-row items-center justify-between rounded-xl border border-cardborder bg-card p-3">
+                <Text className="font-nunito-medium text-base text-foreground sm:text-lg">
                   {onlineUsers.length} {onlineUsers.length === 1 ? 'person' : 'people'} in study
                 </Text>
                 <AntDesign
@@ -361,7 +377,7 @@ const GroupPage = () => {
               </View>
 
               {showDropdown && (
-                <View className="bg-card border-cardborder mt-2 rounded-xl border p-2">
+                <View className="mt-2 rounded-xl border border-cardborder bg-card p-2">
                   {onlineUsers.map((user: Profile) => (
                     <View className="flex-row items-center gap-3 p-2" key={user.id}>
                       {user?.avatar_url ? (
@@ -371,14 +387,16 @@ const GroupPage = () => {
                           source={{ uri: user.avatar_url }}
                         />
                       ) : (
-                        <View className="size-9 items-center justify-center rounded-full bg-gray-300">
-                          <Text className="text-base font-medium uppercase">
+                        <View className="size-9 items-center justify-center rounded-full border border-cardborder bg-card sm:size-12">
+                          <Text className="font-nunito-medium text-base uppercase text-foreground sm:text-lg">
                             {user.username.charAt(0)}
                             {user.username.charAt(1)}
                           </Text>
                         </View>
                       )}
-                      <Text className="text-sm">{user.username}</Text>
+                      <Text className="font-nunito-medium text-sm text-foreground sm:text-lg">
+                        {user.username}
+                      </Text>
                     </View>
                   ))}
                 </View>
@@ -396,7 +414,7 @@ const GroupPage = () => {
               }}>
               {onlineUsers.map((user: Profile) => (
                 <View
-                  className="mb-2 flex-row items-center gap-3 rounded-xl bg-gray-200 p-2"
+                  className="mb-2 flex-row items-center gap-3 rounded-xl bg-card p-2"
                   key={user.id}>
                   {user?.avatar_url ? (
                     <Image
@@ -405,81 +423,115 @@ const GroupPage = () => {
                       source={{ uri: user.avatar_url }}
                     />
                   ) : (
-                    <View className="size-9 items-center justify-center rounded-full bg-gray-300">
-                      <Text className="text-base font-medium uppercase">
+                    <View className="size-9 items-center justify-center rounded-full border-cardborder bg-card sm:size-12">
+                      <Text className="font-nunito-medium text-base uppercase text-foreground">
                         {user.username.charAt(0)}
                         {user.username.charAt(1)}
                       </Text>
                     </View>
                   )}
-                  <Text className="text-sm">{user.username} is in the study.</Text>
+                  <Text className="font-nunito-medium text-sm text-foreground sm:text-lg">
+                    {user.username} is in the study.
+                  </Text>
                 </View>
               ))}
             </Animated.View>
           </View>
-          <Text className="mt-5 text-center text-lg font-bold">Today's study title</Text>
+          <Text className="mt-5 text-center font-nunito-bold text-2xl text-foreground sm:text-3xl">
+            {currentGroup.lesson_title}
+          </Text>
+
+          {groupNotes?.length === 0 &&
+            currentGroup.admin_id === currentUser?.id &&
+            !currentGroup.lesson_title && (
+              <View className=" flex-1 items-center justify-center gap-3 self-center">
+                <Text className="text-center font-nunito-medium text-lg leading-6 text-foreground sm:text-xl">
+                  Start by setting a title for today's study
+                </Text>
+                <View className="mb-2 w-full flex-row items-center justify-between gap-3">
+                  <TextInput
+                    value={lessonTitle}
+                    onChangeText={handleChangeText}
+                    selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
+                    placeholder="What's the title?"
+                    placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
+                    className="w-full flex-1 rounded-xl bg-input p-4 text-foreground"
+                  />
+                  <Pressable
+                    onPress={addTitleToStudy}
+                    className="size-14 items-center justify-center rounded-full bg-primary">
+                    <AntDesign name="plus" size={20} color="black" />
+                  </Pressable>
+                </View>
+                <Pressable onPress={addTitleToStudy}>
+                  <Text className="font-nunito-semibold text-base text-foreground sm:text-lg">
+                    Skip
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+
+          {groupNotes?.length === 0 &&
+            currentGroup.admin_id !== currentUser?.id &&
+            !currentGroup.lesson_title && (
+              <View className="mt-10 flex-1 items-center justify-center gap-3 self-center">
+                <MaterialCommunityIcons
+                  className="animate-spin"
+                  name="loading"
+                  size={70}
+                  color="#FFD700"
+                />
+                <Text className="text-center font-nunito-medium text-lg leading-6 text-foreground sm:text-xl">
+                  Waiting for study leader to set a title...
+                </Text>
+              </View>
+            )}
+
           <FlatList
             data={groupNotes?.toReversed()}
+            keyboardShouldPersistTaps="always"
             inverted={groupNotes && groupNotes?.length > 0}
-            style={{ marginBottom: 5, flex: 1, marginTop: 20 }}
-            contentContainerStyle={{ gap: 15, flex: 1 }}
+            style={{ marginBottom: 5, marginTop: 20 }}
+            contentContainerStyle={{ gap: 15, flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={() => (
               <>
-                {currentGroup.lesson_title ? (
+                {currentGroup.lesson_title && (
                   <View className="mb-20 w-3/4 flex-1 items-center justify-center gap-3 self-center">
-                    <Text className="text-center text-lg font-medium leading-6">
-                      You're all set to start!
+                    <Feather
+                      name="book-open"
+                      size={50}
+                      color={colorScheme === 'dark' ? 'white' : 'black'}
+                    />
+                    <Text className="text-center font-nunito-medium text-lg leading-6 text-foreground sm:text-xl">
+                      Your study has begun! Dive in by adding insights, bible verses, and prayers.
                     </Text>
-                  </View>
-                ) : (
-                  <View className="mb-20 flex-1 items-center justify-center gap-3 self-center">
-                    <Text className="text-center text-lg font-medium leading-6">
-                      Start by setting a title for today's study
-                    </Text>
-                    <View className="mb-2 w-full flex-row items-center justify-between gap-3">
-                      <TextInput
-                        value={lessonTitle}
-                        onChangeText={setLessonTitle}
-                        placeholder="What's the title?"
-                        className="placeholder:text-light-foreground/70 w-full flex-1 rounded-xl bg-gray-200 p-4"
-                      />
-                      <Pressable
-                        onPress={addTitleToStudy}
-                        className="bg-light-primary size-14 items-center justify-center rounded-full">
-                        <AntDesign name="plus" size={20} color="black" />
-                      </Pressable>
-                    </View>
-                    <Pressable>
-                      <Text>Skip</Text>
-                    </Pressable>
                   </View>
                 )}
               </>
             )}
             keyExtractor={(item) => item?.id?.toString()}
+            ListHeaderComponent={() => <View className="h-1" />}
             renderItem={({ item }) => <NoteItem item={item} />}
           />
           {currentGroup.has_started && currentGroup.lesson_title && (
             <View className="mb-8 mt-auto flex-row justify-between gap-4 pt-2">
               <Pressable
                 onPress={() => setShowVerseModal(true)}
-                className="border-light-primary bg-light-primary/15 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border p-3">
-                <Text className="text-lg font-medium">Bible Verse</Text>
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-primary bg-primary p-3 sm:p-4">
+                <Text className="font-nunito-semibold text-lg sm:text-xl">Bible Verse</Text>
                 <AntDesign name="plus" size={15} color="black" />
               </Pressable>
               <Pressable
                 onPress={() => setShowTextModal(true)}
-                className="border-light-secondary bg-light-secondary/15 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border p-3">
-                <Text className="text-lg font-medium">Text</Text>
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-secondary bg-secondary p-3 sm:p-4">
+                <Text className="font-nunito-semibold text-lg sm:text-xl">Thought</Text>
                 <AntDesign name="plus" size={15} color="black" />
               </Pressable>
             </View>
           )}
         </View>
       </View>
-
-      <JoinGroupModal code={currentGroup?.code} bottomSheetModalRef={joinModalRef} />
       <GetVerseModal
         channel={channel}
         groupId={id}

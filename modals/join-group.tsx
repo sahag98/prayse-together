@@ -39,7 +39,11 @@ const JoinGroupModal = ({
     <BottomSheetModalProvider>
       <BottomSheetModal
         containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
-        handleStyle={{ backgroundColor: colorScheme === 'dark' ? '#212121' : 'white' }}
+        handleStyle={{
+          backgroundColor: colorScheme === 'dark' ? '#212121' : 'white',
+          borderTopEndRadius: 15,
+          borderTopLeftRadius: 15,
+        }}
         handleIndicatorStyle={{ backgroundColor: colorScheme === 'dark' ? 'white' : 'black' }}
         ref={bottomSheetModalRef}
         snapPoints={snapPoints}
@@ -47,24 +51,22 @@ const JoinGroupModal = ({
         onChange={handleSheetChanges}>
         <BottomSheetView className="bg-card" style={styles.contentContainer}>
           <View className="flex-1 items-center justify-center gap-3 p-2">
-            <Text className="text-foreground text-xl font-medium">
+            <Text className="font-nunito-medium text-xl text-foreground sm:text-2xl">
               Share this code with someone and invite them to this study!
             </Text>
-            <Pressable className="flex-row items-center gap-2 p-3">
-              <Text className="text-foreground text-4xl">#</Text>
-              <Text className="bg-primary rounded-xl p-3 text-4xl font-bold">{code}</Text>
+            <Pressable className="flex-row items-center gap-0 p-3">
+              <Text className="font-nunito-semibold text-4xl text-foreground sm:text-5xl">#</Text>
+              <Text className="rounded-xl p-3 font-nunito-bold text-4xl text-foreground sm:text-5xl">
+                {code}
+              </Text>
             </Pressable>
             <View className="mt-auto gap-3">
               <Pressable
                 onPress={shareGroup}
-                className=" bg-secondary w-full flex-row items-center justify-between gap-3 rounded-lg p-4">
-                <Text className="text-xl font-semibold">Share code</Text>
+                className=" w-full flex-row items-center justify-between gap-3 rounded-lg bg-secondary p-4">
+                <Text className="font-nunito-semibold text-xl sm:text-2xl">Share code</Text>
                 <Feather name="share" size={24} color="black" />
               </Pressable>
-              {/* <Pressable className=" w-full flex-row items-center justify-between gap-3 rounded-lg bg-light-secondary p-4">
-                <Text className="text-xl font-semibold">Share app</Text>
-                <Feather name="share" size={24} color="black" />
-              </Pressable> */}
             </View>
           </View>
         </BottomSheetView>

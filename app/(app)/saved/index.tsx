@@ -5,8 +5,10 @@ import { useUserStore } from '~/store/store';
 import { router } from 'expo-router';
 import { AntDesign, FontAwesome6, Ionicons } from '@expo/vector-icons';
 import SavedNoteItem from '~/components/SavedNoteItem';
+import { useTheme } from '~/providers/theme-provider';
 
 const SavesScreen = () => {
+  const { colorScheme } = useTheme();
   const { notes, removeAll } = useUserStore();
 
   function deleteAllNotes() {
@@ -22,9 +24,11 @@ const SavesScreen = () => {
               onPress={() => {
                 router.back();
               }}>
-              <AntDesign name="left" size={24} color="black" />
+              <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
             </Pressable>
-            <Text className="text-3xl font-bold">Saved Notes</Text>
+            <Text className="font-nunito-bold text-3xl text-foreground  sm:text-4xl">
+              Saved Notes
+            </Text>
           </View>
           {notes.length > 0 && (
             <Pressable
@@ -56,8 +60,14 @@ const SavesScreen = () => {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={() => (
               <View className="flex-1 items-center justify-center gap-2">
-                <Ionicons name="bookmarks-outline" size={60} color="black" />
-                <Text className="text-lg font-medium">No saved notes yet.</Text>
+                <Ionicons
+                  name="bookmarks-outline"
+                  size={60}
+                  color={colorScheme === 'dark' ? 'white' : 'black'}
+                />
+                <Text className="font-nunito-medium text-lg text-foreground sm:text-xl">
+                  No saved notes yet.
+                </Text>
               </View>
             )}
             keyExtractor={(item) => item.id}

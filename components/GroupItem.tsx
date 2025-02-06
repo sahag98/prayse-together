@@ -60,7 +60,7 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
         cancelButtonIndex,
         destructiveButtonIndex,
       },
-      (selectedIndex: number) => {
+      (selectedIndex: number | undefined) => {
         switch (selectedIndex) {
           case destructiveButtonIndex:
             // Delete
@@ -118,25 +118,35 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
               }
             : ''
         }
-        className=" bg-card border-cardborder aspect-square max-h-52 flex-1 justify-between gap-2 rounded-2xl border p-3">
+        className=" aspect-square max-h-52 flex-1 justify-between gap-2 rounded-2xl border border-cardborder bg-card p-3">
         <View className="gap-2">
-          <Text className="text-foreground text-xl font-semibold">{item.study_group.name}</Text>
-          <Text className="text-foreground text-sm">{item.study_group.description}</Text>
+          <Text className="font-nunito-semibold text-xl text-foreground sm:text-2xl">
+            {item.study_group.name}
+          </Text>
+          <Text className="font-nunito-medium text-sm text-foreground sm:text-lg">
+            {item.study_group.description}
+          </Text>
           {groupAdmin?.profiles?.id !== currentUser?.id && (
-            <View className="flex-row items-center gap-1.5 text-sm">
+            <View className="flex-row items-center gap-1.5 text-sm sm:text-base">
               {groupAdmin?.profiles?.avatar_url ? (
                 <Image
                   style={{ width: 20, height: 20 }}
                   source={{ uri: groupAdmin.profiles.avatar_url }}
-                  className="size-10 rounded-full"
+                  className="size-10 rounded-full sm:size-20"
                 />
               ) : (
-                <View className="bg-background rounded-full p-1">
-                  <Feather name="user" size={12} color="black" />
+                <View className="rounded-full bg-background p-1 sm:p-2">
+                  <Feather
+                    name="user"
+                    size={12}
+                    color={colorScheme === 'dark' ? 'white' : 'black'}
+                  />
                 </View>
               )}
 
-              <Text className="text-sm text-gray-500">{groupAdmin?.profiles?.username}</Text>
+              <Text className="font-nunito-semibold text-sm text-gray-500 sm:text-base">
+                {groupAdmin?.profiles?.username}
+              </Text>
             </View>
           )}
         </View>
@@ -147,15 +157,17 @@ const GroupItem = ({ item }: { item: GroupMembers }) => {
                 position: 'relative',
                 marginLeft: index > 0 ? -10 : 0,
               }}
-              className="bg-secondary size-7 items-center justify-center rounded-full border border-gray-400"
+              className="size-8 items-center justify-center rounded-full border border-gray-400 bg-secondary sm:size-11"
               key={member.user_id}>
-              <Text className="text-xs uppercase">
+              <Text className="font-nunito-semibold text-xs uppercase sm:text-base">
                 {member.profiles?.username?.charAt(0)}
                 {member.profiles?.username?.charAt(1)}
               </Text>
             </View>
           ))}
-          {groupMembers?.length! > 4 && <Text className="ml-1 text-xs">and more</Text>}
+          {groupMembers?.length! > 4 && (
+            <Text className="ml-1 font-nunito-semibold text-xs sm:text-base">and more</Text>
+          )}
           <Text></Text>
         </View>
 

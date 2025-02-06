@@ -12,6 +12,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { supabase } from '~/utils/supabase';
 import { useAuth } from '~/providers/auth-provider';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { useTheme } from '~/providers/theme-provider';
 
 const GetVerseModal = ({
   channel,
@@ -24,6 +25,8 @@ const GetVerseModal = ({
   visible: boolean;
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const { colorScheme } = useTheme();
+
   const [reference, setReference] = useState('');
   const [chapter, setChapter] = useState('');
   const [verse, setVerse] = useState('');
@@ -109,34 +112,82 @@ const GetVerseModal = ({
             alignItems: 'center',
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
           }}>
-          <View className="w-11/12 items-center gap-4 rounded-xl bg-light-background p-4">
+          <View className="w-11/12 items-center gap-4 rounded-xl bg-card p-4">
             <Pressable onPress={() => setVisible(false)} className="absolute right-2 top-2 p-2">
-              <AntDesign name="close" size={24} color="black" />
+              <AntDesign
+                name="close"
+                size={24}
+                color={colorScheme === 'dark' ? 'white' : 'black'}
+              />
             </Pressable>
-            <Text className="mb-2 text-2xl font-semibold">Add Bible Verse</Text>
+            <Text className="mb-2 font-nunito-semibold text-2xl text-foreground sm:text-3xl">
+              Share a Bible Verse
+            </Text>
 
             <TextInput
               autoFocus
-              className="w-full rounded-lg border p-4 font-medium placeholder:text-gray-500"
+              className="w-full rounded-lg border border-cardborder bg-input p-4 font-nunito-medium text-foreground"
+              placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
               placeholder="Enter Reference (ex: John)"
+              selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
               value={reference}
               onChangeText={setReference}
             />
-            <View className="mb-3 flex-row gap-4 rounded-lg bg-gray-200 p-2">
+            <View className="mb-3 flex-row gap-4 rounded-lg border border-cardborder bg-card p-2">
               <Pressable
                 onPress={() => setActiveTab('range')}
-                style={{ backgroundColor: activeTab === 'range' ? 'white' : '' }}
-                className="flex-1 items-center justify-center rounded-md bg-light-secondary  p-2">
-                <Text className="font-bold">Range</Text>
+                style={{
+                  backgroundColor:
+                    activeTab === 'range'
+                      ? '#87ceeb'
+                      : colorScheme === 'dark'
+                        ? '#212121'
+                        : 'white',
+                }}
+                className="bg-light-secondary flex-1 items-center justify-center rounded-md  p-2">
+                <Text
+                  style={{
+                    color:
+                      activeTab === 'range'
+                        ? colorScheme === 'dark'
+                          ? 'black'
+                          : 'black'
+                        : colorScheme === 'dark'
+                          ? 'white'
+                          : 'black',
+                  }}
+                  className="font-nunito-bold text-base sm:text-lg">
+                  Range
+                </Text>
               </Pressable>
               <Pressable
                 onPress={() => {
                   setActiveTab('specific');
                   setVerseEnd('');
                 }}
-                style={{ backgroundColor: activeTab === 'specific' ? 'white' : '' }}
+                style={{
+                  backgroundColor:
+                    activeTab === 'specific'
+                      ? '#87ceeb'
+                      : colorScheme === 'dark'
+                        ? '#212121'
+                        : 'white',
+                }}
                 className="flex-1 items-center justify-center rounded-md p-2">
-                <Text className="font-bold">Specific</Text>
+                <Text
+                  style={{
+                    color:
+                      activeTab === 'specific'
+                        ? colorScheme === 'dark'
+                          ? 'black'
+                          : 'black'
+                        : colorScheme === 'dark'
+                          ? 'white'
+                          : 'black',
+                  }}
+                  className="font-nunito-bold text-base sm:text-lg">
+                  Specific
+                </Text>
               </Pressable>
             </View>
             {/* <View className="flex-row items-center gap-2">
@@ -162,31 +213,37 @@ const GetVerseModal = ({
             </View> */}
             {activeTab === 'range' && (
               <View className="flex-row items-center gap-2">
-                <View className="size-14 items-center justify-center rounded-lg border p-2">
+                <View className="size-14 items-center justify-center rounded-lg border border-cardborder bg-input p-2">
                   <TextInput
-                    className="h-full w-full text-center"
+                    className="h-full w-full text-center font-nunito-medium text-foreground"
+                    placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
                     value={chapter}
                     onChangeText={setChapter}
+                    selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
                     numberOfLines={1}
                     keyboardType="numeric"
                   />
                 </View>
-                <Text className="text-lg font-bold">:</Text>
-                <View className="size-14 items-center justify-center rounded-lg border p-2">
+                <Text className="font-nunito-bold text-lg text-foreground sm:text-xl">:</Text>
+                <View className="size-14 items-center justify-center rounded-lg border border-cardborder bg-input p-2">
                   <TextInput
-                    className="h-full w-full text-center"
+                    className="h-full w-full text-center font-nunito-medium text-foreground"
+                    placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
                     value={verse}
                     numberOfLines={1}
+                    selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
                     onChangeText={setVerse}
                     keyboardType="numeric"
                   />
                 </View>
-                <Text className="text-lg font-bold">-</Text>
-                <View className="size-14 items-center justify-center rounded-lg border p-2">
+                <Text className="font-nunito-bold text-lg text-foreground sm:text-xl">-</Text>
+                <View className="size-14 items-center justify-center rounded-lg border border-cardborder bg-input p-2">
                   <TextInput
-                    className="h-full w-full text-center"
+                    className="h-full w-full text-center font-nunito-medium text-foreground"
+                    placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
                     value={verseEnd}
                     numberOfLines={1}
+                    selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
                     onChangeText={setVerseEnd}
                     keyboardType="numeric"
                   />
@@ -195,21 +252,25 @@ const GetVerseModal = ({
             )}
             {activeTab === 'specific' && (
               <View className="flex-row items-center gap-2">
-                <View className="size-14 items-center justify-center rounded-lg border p-2">
+                <View className="size-14 items-center justify-center rounded-lg border border-cardborder bg-input p-2">
                   <TextInput
-                    className="h-full w-full text-center"
+                    className="h-full w-full  text-center font-nunito-medium text-foreground"
+                    placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
                     value={chapter}
                     onChangeText={setChapter}
+                    selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
                     numberOfLines={1}
                     keyboardType="numeric"
                   />
                 </View>
-                <Text className="text-lg font-bold">:</Text>
-                <View className="size-14 items-center justify-center rounded-lg border p-2">
+                <Text className="font-nunito-bold text-lg text-foreground sm:text-xl">:</Text>
+                <View className="size-14 items-center justify-center rounded-lg border border-cardborder bg-input p-2">
                   <TextInput
-                    className="h-full w-full text-center"
+                    className="h-full w-full text-center font-nunito-medium text-foreground"
+                    placeholderTextColor={colorScheme === 'dark' ? '#dcdcdc' : '#4b5563'}
                     value={verse}
                     numberOfLines={1}
+                    selectionColor={colorScheme === 'dark' ? 'white' : 'black'}
                     onChangeText={setVerse}
                     keyboardType="numeric"
                   />
@@ -219,8 +280,8 @@ const GetVerseModal = ({
 
             <Pressable
               onPress={addVerseToStudyNote}
-              className="mt-3 w-full items-center rounded-xl bg-light-primary p-3">
-              <Text className="text-lg font-bold">ADD</Text>
+              className="mt-3 w-full items-center rounded-xl bg-primary p-3">
+              <Text className="font-nunito-bold text-lg sm:text-xl">SHARE</Text>
             </Pressable>
           </View>
         </View>

@@ -57,7 +57,9 @@ const Plans = () => {
               }}>
               <AntDesign name="left" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
             </Pressable>
-            <Text className="text-3xl font-bold text-foreground">{title} Plans</Text>
+            <Text className="font-nunito-bold text-3xl text-foreground sm:text-4xl">
+              {title} Plans
+            </Text>
           </View>
         </View>
         <FlatList
@@ -65,7 +67,7 @@ const Plans = () => {
           numColumns={1}
           contentContainerStyle={{ flexGrow: 1, gap: 10 }}
           showsVerticalScrollIndicator={false}
-          ListFooterComponent={() => <View className="h-24" />}
+          // ListFooterComponent={() => <View className="h-24" />}
           ListEmptyComponent={() => (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator />
@@ -89,7 +91,9 @@ const Plans = () => {
                 />
 
                 <View className="w-fit flex-1 gap-7">
-                  <Text className="text-lg font-semibold text-foreground">{item.title}</Text>
+                  <Text className="font-nunito-semibold text-lg text-foreground sm:text-2xl">
+                    {item.title}
+                  </Text>
                 </View>
               </View>
 
