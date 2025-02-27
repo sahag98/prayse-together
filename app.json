@@ -52,6 +52,13 @@
       ["expo-router"],
       "expo-sqlite",
       [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
+        }
+      ],
+      [
         "expo-font",
         {
           "fonts": [
@@ -62,7 +69,8 @@
             "node_modules/@expo-google-fonts/raleway/Raleway_700Bold.ttf"
           ]
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,

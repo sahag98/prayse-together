@@ -28,6 +28,7 @@ import {
   Nunito_700Bold,
   useFonts,
 } from '@expo-google-fonts/nunito';
+import { vexo } from 'vexo-analytics';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -51,12 +52,14 @@ Sentry.init({
   enableNativeFramesTracking: !isRunningInExpoGo(), // Tracks slow and frozen frames in the application
 });
 
+if (!__DEV__) {
+  vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY!);
+}
+
 const queryClient = new QueryClient();
 
 function Layout() {
   const [appIsReady, setAppIsReady] = useState(false);
-
-  const { colorScheme } = useTheme();
 
   const [loaded, error] = useFonts({
     Nunito_300Light,

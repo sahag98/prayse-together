@@ -1,4 +1,4 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Container } from '~/components/Container';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import * as WebBrowser from 'expo-web-browser';
@@ -7,7 +7,40 @@ import { useAuth } from '~/providers/auth-provider';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 import { useTheme } from '~/providers/theme-provider';
+import {
+  Blur,
+  Canvas,
+  Fill,
+  Group,
+  LinearGradient,
+  RadialGradient,
+  RoundedRect,
+  useImage,
+  Shadow,
+  Image,
+  vec,
+} from '@shopify/react-native-skia';
+import { useCallback } from 'react';
+import {
+  Extrapolation,
+  interpolate,
+  SensorType,
+  useAnimatedSensor,
+  useDerivedValue,
+} from 'react-native-reanimated';
+
+const CanvasSize = {
+  width: 300,
+  height: 300,
+};
+
+const CanvasCenter = vec(CanvasSize.width / 2, CanvasSize.height / 2);
+
+const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
+
+const SquareSize = 170;
 export default function Login() {
+  const logoImg = useImage(require('~/assets/prayse-together-logo.png'));
   const { getGoogleOAuthUrl, currentUser, setCurrentUser } = useAuth();
   const { colorScheme } = useTheme();
   const onSignInWithApple = async () => {
@@ -104,19 +137,87 @@ export default function Login() {
 
     return data;
   };
+
+  const deviceRotation = useAnimatedSensor(SensorType.ROTATION, {
+    interval: 20,
+  });
+
+  const rotateY = useDerivedValue(() => {
+    const { roll } = deviceRotation.sensor.value;
+
+    return interpolate(roll, [-1, 0, 1], [Math.PI / 8, 0, -Math.PI / 8], Extrapolation.CLAMP);
+  });
+
+  const rotationGravity = useAnimatedSensor(SensorType.GRAVITY, {
+    interval: 20,
+  });
+
+  const rotateX = useDerivedValue(() => {
+    const { z } = rotationGravity.sensor.value;
+
+    return interpolate(z, [-10, -6, -1], [-Math.PI / 8, 0, Math.PI / 8], Extrapolation.CLAMP);
+  });
+
+  const rTransform = useDerivedValue(() => {
+    return [{ perspective: 200 }, { rotateY: rotateY.value }, { rotateX: rotateX.value }];
+  });
+
+  const shadowDx = useDerivedValue(() => {
+    return interpolate(
+      rotateY.value,
+      [-Math.PI / 8, 0, Math.PI / 8],
+      [10, 0, -10],
+      Extrapolation.CLAMP
+    );
+  });
+
+  const shadowDy = useDerivedValue(() => {
+    return interpolate(
+      rotateX.value,
+      [-Math.PI / 8, 0, Math.PI / 8],
+      // Exception instead of (-10 use 7) that's because the "light source" is on the top
+      [7, 0, 10],
+      Extrapolation.CLAMP
+    );
+  });
+
+  const GoodOldSquare = useCallback(({ children }: { children?: React.ReactNode }) => {
+    return (
+      <RoundedRect
+        x={CanvasSize.width / 2 - SquareSize / 2}
+        y={CanvasSize.height / 2 - SquareSize / 2}
+        width={SquareSize}
+        height={SquareSize}
+        color=""
+        r={35}>
+        {children}
+      </RoundedRect>
+    );
+  }, []);
   return (
     <>
       {/* <Stack.Screen options={{ title: 'Home' }} /> */}
       <Container>
         <View className="flex-1 justify-center gap-5">
+          <View className="items-center justify-center">
+            <Canvas
+              style={{
+                height: CanvasSize.height,
+                width: CanvasSize.width,
+              }}>
+              <Group origin={CanvasCenter} transform={rTransform}>
+                <Image
+                  x={(CanvasSize.width - 230) / 2} // Centers the image horizontally
+                  y={(CanvasSize.height - 230) / 2}
+                  image={logoImg}
+                  fit="contain"
+                  width={230}
+                  height={230}
+                />
+              </Group>
+            </Canvas>
+          </View>
           <View className="gap-2">
-            <Image
-              source={require('../../assets/prayse-together-logo.png')}
-              width={600}
-              height={600}
-              style={{ tintColor: colorScheme === 'dark' ? 'white' : 'black' }}
-              className="size-64 self-center sm:size-96"
-            />
             <Text className="font-nunito-bold text-3xl text-foreground sm:text-4xl">
               Welcome to Bible Study by Prayse
             </Text>

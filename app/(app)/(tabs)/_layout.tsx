@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import { Redirect, Stack, Tabs, withLayoutContext } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useNotificationObserver } from '~/hooks/useNotificationObserver';
@@ -64,6 +64,9 @@ export default function TabsLayout() {
             name="index"
             options={{
               title: 'Home',
+              tabBarLabelStyle: {
+                padding: 3,
+              },
               tabBarStyle: {
                 backgroundColor: colorScheme === 'dark' ? '#212121' : 'white',
                 borderTopColor: colorScheme === 'dark' ? '#787878' : '#d2d2d2',
@@ -74,9 +77,28 @@ export default function TabsLayout() {
             }}
           />
           <Tabs.Screen
+            name="bible"
+            options={{
+              title: 'Bible',
+              tabBarLabelStyle: {
+                padding: 3,
+              },
+              tabBarStyle: {
+                backgroundColor: colorScheme === 'dark' ? '#212121' : 'white',
+                borderTopColor: colorScheme === 'dark' ? '#787878' : '#d2d2d2',
+              },
+              tabBarIcon: ({ color, focused }) => (
+                <FontAwesome6 name="book-bible" color={color} size={30} />
+              ),
+            }}
+          />
+          <Tabs.Screen
             name="plans"
             options={{
               title: 'plans',
+              tabBarLabelStyle: {
+                padding: 3,
+              },
               tabBarStyle: {
                 backgroundColor: colorScheme === 'dark' ? '#212121' : 'white',
                 borderTopColor: colorScheme === 'dark' ? '#787878' : '#d2d2d2',

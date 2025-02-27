@@ -10,12 +10,11 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { Container } from '~/components/Container';
 import { supabase } from '~/utils/supabase';
 import { useAuth } from '~/providers/auth-provider';
-import { Redirect, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import Animated, {
   useSharedValue,
@@ -169,13 +168,21 @@ export default function Setup() {
       }
 
       const image = result.assets[0];
-      setImg(image);
+      // setImg(image);
 
       if (!image.uri) {
         throw new Error('No image uri!'); // Realistically, this should never happen, but just in case...
       }
 
-      const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
+      const compressedImage = await ImageManipulator.manipulateAsync(
+        image.uri,
+        [{ resize: { width: 200, height: 200 } }], // Resize to 300x300 pixels (adjust as needed)
+        { compress: 1, format: ImageManipulator.SaveFormat.JPEG } // Compress and save as JPEG
+      );
+
+      setImg(compressedImage);
+
+      const arraybuffer = await fetch(compressedImage.uri).then((res) => res.arrayBuffer());
 
       const fileExt = image.uri?.split('.').pop()?.toLowerCase() ?? 'jpeg';
       const path = `${Date.now()}.${fileExt}`;

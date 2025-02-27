@@ -27,11 +27,7 @@ function AccordionItem({ isExpanded, children, viewKey, style, duration = 500 }:
 
   return (
     <Animated.View key={`accordionItem_${viewKey}`} style={[styles.animatedView, bodyStyle, style]}>
-      <View
-        onLayout={(e) => {
-          height.value = e.nativeEvent.layout.height;
-        }}
-        style={styles.wrapper}>
+      <View onLayout={(e) => (height.value = e.nativeEvent.layout.height)} style={styles.wrapper}>
         {children}
       </View>
     </Animated.View>

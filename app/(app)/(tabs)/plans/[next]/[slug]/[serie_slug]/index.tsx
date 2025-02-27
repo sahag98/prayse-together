@@ -1,32 +1,48 @@
-import { Pressable, Text, View } from 'react-native';
-import React, { useState } from 'react';
+import { Button, Pressable, Text, View } from 'react-native';
+import React, { useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Container } from '~/components/Container';
 import { WebView } from 'react-native-webview';
 import { AntDesign } from '@expo/vector-icons';
 import { useUserStore } from '~/store/store';
+import { useEvent } from 'expo';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '~/providers/theme-provider';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { Video, ResizeMode } from 'expo-av';
 const SeriePage = () => {
   const { serie_slug, name } = useLocalSearchParams();
   const { addPlan, studiedPlans } = useUserStore();
-
   const { colorScheme } = useTheme();
 
   const [isFinished, setIsFinished] = useState(false);
-
-  const { data, isFetched, isLoadingError, isLoading } = useQuery({
+  const video = useRef(null);
+  const [status, setStatus] = useState({});
+  const { data } = useQuery({
     queryKey: ['content'],
     queryFn: fetchHtmlContent,
   });
 
   async function fetchHtmlContent() {
     try {
+      const videoJSON = await fetch(`https://bibletalk.tv/${serie_slug}.json`);
+
+      const video = await videoJSON.json();
+
       const response = await fetch(`https://bibletalk.tv/${serie_slug}.body.html`);
       if (!response.ok) {
         throw new Error('Failed to fetch the HTML content');
       }
       let text = await response.text();
+      const match = video.youtube?.embed.match(/src=['"]([^'"]+)['"]/);
+
+      const srcValue = match ? match[1] : null;
+
+      const videoEmbedHtml = srcValue
+        ? `<iframe width="100%" style="border-radius:10px;" height="315" src="${srcValue}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe><br/>`
+        : `<div style="width: 100%; height: 315px; display: flex; align-items: center; justify-content: center; background-color: #ddd; color: #555; font-size: 18px; font-family: Arial, sans-serif; border-radius: 15px;">
+        Loading Video...
+        </div><br/>`;
 
       const wrappedHtml = `
           <!DOCTYPE html>
@@ -45,6 +61,7 @@ const SeriePage = () => {
             <title>Serie Page</title>
           </head>
           <body>
+            ${videoEmbedHtml}
             ${text}
           </body>
           </html>
@@ -56,6 +73,8 @@ const SeriePage = () => {
       console.log(err);
     }
   }
+
+  // if (!videoData) return;
 
   return (
     <Container>
@@ -72,21 +91,20 @@ const SeriePage = () => {
           </Text>
         </View>
       </View>
-      {/* <RenderHTML contentWidth={width} source={{ html: `${htmlContent}` }} /> */}
       <WebView
         originWhitelist={['*']}
         style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#121212' : '#FAF9F6' }}
         source={{ html: `${data}` }}
+        showsVerticalScrollIndicator={false}
         injectedJavaScript={`
-
           document.body.style.color = '${colorScheme === 'dark' ? '#FFFFFF' : '#000000'}';
-    document.addEventListener('scroll', () => {
-      const { scrollHeight, scrollTop, clientHeight } = document.documentElement;
-      if (scrollTop + clientHeight >= scrollHeight) {
+          document.addEventListener('scroll', () => {
+          const { scrollHeight, scrollTop, clientHeight } = document.documentElement;
+          if (scrollTop + clientHeight >= scrollHeight) {
         window.ReactNativeWebView.postMessage("reachedEnd");
-      }
-    });
-  `}
+        }
+        });
+      `}
         onMessage={(event) => {
           if (event.nativeEvent.data === 'reachedEnd') {
             setIsFinished(true);
@@ -94,7 +112,6 @@ const SeriePage = () => {
           }
         }}
       />
-
       <Pressable
         disabled={!isFinished}
         onPress={() => {
